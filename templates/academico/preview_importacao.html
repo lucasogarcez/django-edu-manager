@@ -1,0 +1,362 @@
+{% extends "index.html" %}
+
+{% block title %}Conferência de Importação{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    
+    {# --- BREADCRUMB --- #}
+    <nav aria-label="breadcrumb" class="bg-white p-3 rounded-3 shadow-sm border mb-4">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none text-secondary">Início</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'academico:importar_ficha_chamada' %}" class="text-decoration-none text-secondary">Importar Ficha</a></li>
+            <li class="breadcrumb-item active fw-bold text-primary">Conferência</li>
+        </ol>   
+    </nav>
+
+    {# --- ALERTA DE REVISÃO --- #}
+    <div class="alert alert-warning border-warning d-flex align-items-center shadow-sm mb-4">
+        <div class="bg-warning rounded-circle p-2 me-3 text-white d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+            </svg>
+        </div>
+        <div>
+            <h5 class="alert-heading fw-bold mb-0">Modo de Conferência</h5>
+            <p class="mb-0 text-muted small">
+                O sistema identificou a <strong>Turma</strong> e <strong>{{ alunos|length }}</strong> alunos.
+                Qualquer alteração feita aqui será automaticamente salva ao confirmar.
+            </p>
+        </div>
+    </div>
+
+    <form method="post" action="{% url 'academico:importar_ficha_chamada' %}" id="form-confirmacao">
+        {% csrf_token %}
+        <input type="hidden" name="payload_json" id="input_payload_final">
+
+        {# --- BLOCO 1: DADOS DA TURMA --- #}
+        <div class="card shadow-sm border-0 mb-4 border-start border-4 border-primary">
+            <div class="card-header d-flex justify-content-between align-items-center bg-white py-3">
+                <h6 class="fw-bold text-primary mb-0">Dados da Turma Identificada</h6>
+                <div class="text-end">
+                    <span class="fw-bold text-secundary me-2">Regra de Atestado:</span>
+                    {% if turma.exige_atestado %}
+                        <span class="badge bg-success border border-light">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-shield-lock-fill" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M8 0c-.69 0-1.843.265-2.928.56-1.11.3-2.229.655-2.887.87a1.54 1.54 0 0 0-1.044 1.262c-.596 4.477.787 7.795 2.465 9.99a11.8 11.8 0 0 0 2.517 2.453c.386.273.744.482 1.048.625.28.132.581.24.829.24s.548-.108.829-.24a7 7 0 0 0 1.048-.625 11.8 11.8 0 0 0 2.517-2.453c1.678-2.195 3.061-5.513 2.465-9.99a1.54 1.54 0 0 0-1.044-1.263 63 63 0 0 0-2.887-.87C9.843.266 8.69 0 8 0m0 5a1.5 1.5 0 0 1 .5 2.915l.385 1.99a.5.5 0 0 1-.491.595h-.788a.5.5 0 0 1-.49-.595l.384-1.99A1.5 1.5 0 0 1 8 5"/>
+                            </svg>
+                            Obrigatório (Rigoroso)
+                        </span>
+                    {% else %}
+                        <span class="badge bg-danger border border-light">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-unlock-fill" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M12 0a4 4 0 0 1 4 4v2.5h-1V4a3 3 0 1 0-6 0v2h.5A2.5 2.5 0 0 1 12 8.5v5A2.5 2.5 0 0 1 9.5 16h-7A2.5 2.5 0 0 1 0 13.5v-5A2.5 2.5 0 0 1 2.5 6H8V4a4 4 0 0 1 4-4"/>
+                            </svg>
+                            Não Obrigatório (Flexível)
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card-body p-3">
+                <div class="row text-center align-items-center">
+                    
+                    <div class="col border-end">
+                        <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.70rem;">Modalidade</small>
+                        <strong class="fs-5 d-block text-dark">{{ turma.modalidade }}</strong>
+                        
+                        <div class="mt-1">
+                            {% if turma.status == 'NOVA' %}
+                                <span class="badge bg-success rounded-pill" style="font-size: 0.65rem;">SERÁ CRIADA</span>
+                            {% elif turma.status == 'EXISTENTE' %}
+                                <span class="badge bg-warning text-dark rounded-pill" style="font-size: 0.65rem;">JÁ EXISTE</span>
+                            {% else %}
+                                <span class="badge bg-danger rounded-pill" style="font-size: 0.65rem;">ERRO</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col border-end">
+                        <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.70rem;">Capacidade</small>
+                        <input type="number" 
+                               id="edit-capacidade" 
+                               value="20" 
+                               class="form-control border-0 bg-transparent text-dark fw-bold text-center shadow-none mx-auto p-0 custom-focus-ring" 
+                               style="width: 50px; font-size: 1.10rem;" 
+                               title="Clique para editar a capacidade">
+                        <small class="text-muted fst-italic">Edite ao clicar no Nro</small>
+                    </div>
+
+                    <div class="col border-end">
+                        <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.70rem;">Professor</small>
+                        <strong class="fs-6 text-primary">{{ turma.professor|safe }}</strong>
+                    </div>
+
+                    <div class="col border-end">
+                        <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.70rem;">Estagiário</small>
+                        <strong class="fs-6 text-secondary">{{ turma.estagiario|safe }}</strong>
+                    </div>
+
+                    <div class="col border-end">
+                        <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.70rem;">Local</small>
+                        <strong class="fs-6 text-dark">{{ turma.local }}</strong>
+                    </div>
+
+                    <div class="col">
+                        <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.70rem;">Horário</small>
+                        <strong class="fs-5 text-dark">{{ turma.horario }}</strong>
+                    </div>
+
+                    <div class="col border-end">
+                        <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.70rem;">Dias</small>
+                        <strong class="fs-6 text-dark">{{ turma.dias }}</strong>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        {# --- BLOCO 2: LISTA DE ALUNOS --- #}
+        <div class="card shadow-sm border-0 mb-5">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <span class="badge bg-secondary rounded-pill">
+                    Total: <span id="contador-alunos">{{ alunos|length }}</span>
+                </span>
+                <small class="text-muted fst-italic">Edite os campos clicando neles</small>
+            </div>
+
+            <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                <table class="table table-hover table-bordered align-middle mb-0">
+                    <thead class="table-light sticky-top text-center" style="z-index: 10;">
+                        <tr>
+                            <th style="width: 35%">Nome Completo do Aluno</th>
+                            <th style="width: 15%">Data Nascimento</th>
+                            <th style="width: 15%">Data Início Atestado</th>
+                            <th style="width: 20%">Ação do Sistema</th>
+                            <th style="width: 10%" class="text-center">Remover</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-alunos">
+                        {% for aluno in alunos %}
+                        <tr data-index="{{ forloop.counter0 }}" class="align-middle">
+                            <td>
+                                <input type="text" class="form-control form-control-sm fw-bold input-editavel border-0 bg-transparent" 
+                                       data-field="nome" value="{{ aluno.nome }}">
+                                {% if aluno.status == 'NOVO' %}
+                                    <div class="text-warning small fst-italic mt-1" style="font-size: 0.7rem;">
+                                        Será criado sem RG e CPF
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <input type="date" 
+                                       class="form-control form-control-sm input-editavel bg-transparent 
+                                       {% if aluno.nascimento == '-' or not aluno.nascimento %} border border-danger border-2 text-danger shadow-sm {% else %} border-0 text-secondary {% endif %}" 
+                                       data-field="nascimento" 
+                                       value="{% if aluno.nascimento != '-' %}{{ aluno.nascimento }}{% endif %}"
+                                       title="{% if aluno.nascimento == '-' %}PREENCHIMENTO OBRIGATÓRIO{% endif %}">
+                            </td>
+
+                            <td>
+                                <input type="date" 
+                                       class="form-control form-control-sm input-editavel bg-transparent fw-semibold
+                                       {% if aluno.data_atestado == '-' or not aluno.data_atestado %} border border-danger border-2 text-danger shadow-sm {% else %} border-0 text-primary {% endif %}" 
+                                       data-field="data_atestado" 
+                                       value="{% if aluno.data_atestado != '-' %}{{ aluno.data_atestado }}{% endif %}"
+                                       title="{% if aluno.data_atestado == '-' %}PREENCHIMENTO OBRIGATÓRIO{% endif %}">
+                            </td>
+                            <td class="text-center">
+                                {% if aluno.status == 'NOVO' %}
+                                    <span class="badge bg-success bg-opacity-75 text-white">Criar + Matricular</span>
+                                {% elif aluno.status == 'EXISTENTE' %}
+                                    <span class="badge bg-info text-dark">Atualizar + Matricular</span>
+                                {% elif aluno.status == 'MATRICULADO' %}
+                                    <span class="badge bg-secondary">Já na Turma</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-outline-danger btn-sm border-0 rounded-circle" 
+                                        onclick="removerAluno({{ forloop.counter0 }})">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                        <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
+                                    </svg>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card-footer bg-white py-3">
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{% url 'academico:importar_ficha_chamada' %}" class="btn btn-outline-secondary">Cancelar</a>
+                    <button type="submit" name="confirmar_importacao" class="btn btn-success fw-bold px-4 shadow-sm">
+                        Confirmar e Salvar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script id="dados-iniciais" type="application/json">
+    {{ payload_json|safe }}
+</script>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        
+        // 1. Carregar dados iniciais
+        let dadosCompleto = {};
+        const inputHiddenFinal = document.getElementById('input_payload_final');
+        const scriptDados = document.getElementById('dados-iniciais');
+
+        try {
+            if (scriptDados && scriptDados.textContent) {
+                dadosCompleto = JSON.parse(scriptDados.textContent);
+            }
+        } catch (e) {
+            console.error("Erro ao fazer parse do JSON inicial:", e);
+            alert("Erro ao carregar dados. Tente novamente.");
+        }
+
+        const inputCapacidade = document.getElementById('edit-capacidade');
+        if (inputCapacidade) {
+            // Sincroniza o HTML com o Payload caso a turma já venha com capacidade diferente de 20
+            if (dadosCompleto.turma && dadosCompleto.turma.capacidade) {
+                inputCapacidade.value = dadosCompleto.turma.capacidade;
+            }
+
+            inputCapacidade.addEventListener('input', function() {
+                if (dadosCompleto.turma) {
+                    dadosCompleto.turma.capacidade = Number.parseInt(this.value) || 0;
+                }
+            });
+        }
+
+        // 2. Função que ouve a edição (Evento 'input' é melhor que 'change' para tempo real)
+        document.querySelectorAll('.input-editavel').forEach(input => {
+            input.addEventListener('input', function() {
+                const tr = this.closest('tr');
+                const index = Number.parseInt(tr.dataset.index);
+                const campo = this.dataset.field;
+
+                // Atualiza o objeto na memória RAM
+                if (dadosCompleto.alunos && dadosCompleto.alunos[index]) {
+                    dadosCompleto.alunos[index][campo] = this.value;
+                    
+                    // Feedback visual de que foi editado
+                    this.classList.add('fw-bold', 'text-primary');
+
+                    // AUTO-REARME: Se o campo estava vermelho (com erro), apaga o alerta assim que ele digitar
+                    this.classList.remove('border', 'border-danger', 'border-2', 'text-danger', 'shadow-sm');
+                }
+            });
+        });
+
+        // 3. Função de Remover (Mantendo a lógica de null)
+        window.removerAluno = function(index) {
+            if(!confirm("Remover este aluno?")) return;
+            
+            const tr = document.querySelector(`tr[data-index="${index}"]`);
+            if(tr) {
+                tr.style.backgroundColor = "#ffcccc";
+                setTimeout(() => tr.remove(), 400);
+                
+                if (dadosCompleto.alunos[index]) {
+                    dadosCompleto.alunos[index] = null; // Marca como removido
+                    atualizarContador();
+                }
+            }
+        };
+
+        function atualizarContador() {
+            const contadorSpan = document.getElementById('contador-alunos');
+            if(contadorSpan) {
+                const ativos = dadosCompleto.alunos.filter(a => a !== null).length;
+                contadorSpan.textContent = ativos;
+            }
+        }
+
+        const form = document.getElementById('form-confirmacao');
+        
+        form.addEventListener('submit', function(event) {
+            // Se previnir o default, o form não envia. Nós queremos que envie,
+            // mas só DEPOIS de atualizar o input.
+            
+            console.log("Preparando dados para envio...");
+
+            const inputCapacidadeFisico = document.getElementById('edit-capacidade');
+            if (inputCapacidadeFisico && dadosCompleto.turma) {
+                dadosCompleto.turma.capacidade = Number.parseInt(inputCapacidadeFisico.value) || 20;
+            }
+
+            // 1. Limpa os alunos deletados (null)
+            const alunosLimpos = dadosCompleto.alunos.filter(aluno => aluno !== null);
+            const cargaAtual = alunosLimpos.length;
+            
+            // 2. Lê a tolerância do componente (Capacidade)
+            const capacidadeMaxima = Number.parseInt(dadosCompleto.turma.capacidade) || 0;
+
+            if (cargaAtual > capacidadeMaxima) {
+                event.preventDefault(); // Desarma o disjuntor (cancela o POST)
+                
+                // Dispara a sirene do sistema
+                alert(`Erro de Limite Físico: Você está tentando matricular ${cargaAtual} alunos, mas a capacidade máxima definida para a turma é de ${capacidadeMaxima}.\n\nPor favor, aumente a capacidade no cabeçalho ou remova ${cargaAtual - capacidadeMaxima} aluno(s) da lista.`);
+                
+                // Acende o LED vermelho de falha no input correspondente
+                const inputCapacidade = document.getElementById('edit-capacidade');
+                if (inputCapacidade) {
+                    inputCapacidade.classList.remove('text-primary');
+                    inputCapacidade.classList.add('text-danger', 'fw-bolder');
+                    inputCapacidade.style.backgroundColor = '#ffcccc'; // Fundo vermelho claro para destaque
+                    
+                    // Rola a tela suavemente para cima apontando o erro
+                    inputCapacidade.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Quando o usuário tentar corrigir (digitar de novo), apaga o LED de erro
+                    inputCapacidade.addEventListener('input', function resetError() {
+                        this.classList.remove('text-danger', 'fw-bolder');
+                        this.classList.add('text-primary');
+                        this.style.backgroundColor = '';
+                        this.removeEventListener('input', resetError); // Remove o ouvinte após limpar
+                    });
+                }
+                
+                return; // Corta o fluxo elétrico aqui, a submissão não acontece.
+            }
+            
+            // 3. Reconstrói o objeto final
+            const payloadFinal = {
+                turma: dadosCompleto.turma,
+                alunos: alunosLimpos
+            };
+
+            // 4. Converte para String
+            const stringFinal = JSON.stringify(payloadFinal);
+
+            // Intertravamento do botão (excluindo debounce)
+            const btnSubmit = form.querySelector('button[name="confirmar_importacao"]');
+            if (btnSubmit) {
+                btnSubmit.disabled = true; // Corta a energia do botão
+                btnSubmit.innerHTML = 'Salvando...'; // Feedback visual
+            }
+
+            // 5. INJETA NO INPUT HIDDEN AGORA (Força Bruta)
+            if (inputHiddenFinal) {
+                inputHiddenFinal.value = stringFinal;
+                console.log("Input Hidden Atualizado com sucesso:", inputHiddenFinal.value.slice(0, 100) + "...");
+            } else {
+                console.error("ERRO CRÍTICO: Input Hidden 'payload_json' não encontrado!");
+                event.preventDefault(); // Para o envio se não achar o input
+                alert("Erro interno: Input de dados não encontrado.");
+            }
+        });
+    });
+</script>
+{% endblock %}

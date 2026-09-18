@@ -1,0 +1,149 @@
+{% extends "index.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Editar Questionário Saúde do Aluno{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+        <div class="mt-4 mb-4 p-4 border rounded shadow-sm bg-white ">
+            
+            {# Pega o nome do objeto Aluno que a UpdateView passa automaticamente #}
+            <h2>Editar questionário de saúde de {{ aluno.primeiro_nome }}</h2> 
+            <hr>
+
+            {# 'form' é a variável que a UpdateView passa para o template #}
+            <form method="post"> 
+                {% csrf_token %}
+                
+                {# Renderiza o QuestionarioSaudeForm usando o helper definido nele #}
+                {{ form|crispy }} 
+                
+                <div class="d-flex justify-content-end mt-4">
+                    {# Tenta voltar para a página anterior (lista de alunos) #}
+                    {% include 'components/botao_voltar.html' %}
+                    <button type="submit" class="btn btn-success mt-3 ms-2">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        
+        // --- 1. MÓDULOS DE TOGGLE (Reaproveitados do Cadastro) ---
+        function toggleOutros(checkboxName, targetDivId) {
+            const checkboxes = document.querySelectorAll(`input[name="${checkboxName}"]`);
+            const targetDiv = document.getElementById(targetDivId);
+            
+            if (!targetDiv || checkboxes.length === 0) return; // Saída silenciosa segura
+            
+            function check() { 
+                const show = Array.from(checkboxes).some(c => {
+                    if (!c.checked) return false;
+                    const labelText = c.nextElementSibling.textContent.trim().toLowerCase();
+                    return labelText.includes('outr'); // Gatilho flexível (Outro, Outros, Outras)
+                });
+                // Atua no CSS para mostrar/esconder
+                targetDiv.style.display = show ? 'block' : 'none';
+            }
+            
+            checkboxes.forEach(cb => cb.addEventListener('change', check));
+            check(); // Varredura inicial crucial para manter o estado salvo no banco
+        }
+
+        function togglePraticaExercicio() {
+            const triggerCheckbox = document.getElementById('id_pratica_exercicio');
+            // Atenção ao padrão Crispy: div_id_[nome_do_campo]
+            const tipoDiv = document.getElementById('div_id_tipo_exercicio');
+            const frequenciaDiv = document.getElementById('div_id_frequencia_exercicio');
+            
+            if (!triggerCheckbox || !tipoDiv || !frequenciaDiv) return;
+            
+            function check() {
+                const show = triggerCheckbox.checked;
+                tipoDiv.style.display = show ? 'block' : 'none';
+                frequenciaDiv.style.display = show ? 'block' : 'none';
+            }
+            triggerCheckbox.addEventListener('change', check);
+            check(); // Varredura inicial
+        }
+        
+        // --- 2. INICIALIZAÇÃO DOS RELÉS ---
+        // O Crispy Forms encapsula as linhas extras com "div_id_"
+        toggleOutros('doencas', 'div_id_outras_doencas');
+        toggleOutros('objetivos', 'div_id_outros_objetivos');
+        togglePraticaExercicio();
+
+        // --- 3. FUNÇÕES DE UTILIDADE (Para pintar os erros na tela) ---
+        function setFieldError(fieldId, message) {
+            const field = document.getElementById(fieldId);
+            if (!field) return;
+            field.classList.add('is-invalid');
+            
+            let errorDiv = field.parentNode.querySelector('.invalid-feedback');
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.className = 'invalid-feedback';
+                field.parentNode.appendChild(errorDiv);
+            }
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function clearFieldError(fieldId) {
+            const field = document.getElementById(fieldId);
+            if (!field) return;
+            field.classList.remove('is-invalid');
+            const errorDiv = field.parentNode.querySelector('.invalid-feedback');
+            if (errorDiv) errorDiv.style.display = 'none';
+        }
+
+        // --- 4. VALIDAÇÃO DE PRÉ-SUBMISSÃO (Interrupção antes do POST) ---
+        const formEdicao = document.querySelector('form'); // Pega o formulário da página
+        
+        if (formEdicao) {
+            formEdicao.addEventListener('submit', function(event) {
+                let isFormValid = true;
+
+                // Validação de Exercícios
+                const praticaChecked = document.getElementById('id_pratica_exercicio')?.checked;
+                const tipoField = document.getElementById('id_tipo_exercicio');
+                const frequenciaField = document.getElementById('id_frequencia_exercicio');
+                
+                if (praticaChecked) {
+                    if (tipoField && tipoField.value.trim() === '') {
+                        setFieldError('id_tipo_exercicio', 'Especifique o tipo de exercício.');
+                        isFormValid = false;
+                    } else { clearFieldError('id_tipo_exercicio'); }
+                    
+                    if (frequenciaField && frequenciaField.value === '') { 
+                        setFieldError('id_frequencia_exercicio', 'Selecione a frequência.');
+                        isFormValid = false;
+                    } else { clearFieldError('id_frequencia_exercicio'); }
+                }
+
+                // Validação de Doenças (Se marcou 'Outras', tem que preencher o texto)
+                const outrasDoencasField = document.getElementById('id_outras_doencas');
+                const doencasChecks = document.querySelectorAll('input[name="doencas"]');
+                const outrasDoencaChecked = Array.from(doencasChecks).some(c => c.checked && c.nextElementSibling.textContent.trim().toLowerCase().includes('outr'));
+                
+                if (outrasDoencaChecked && outrasDoencasField && outrasDoencasField.value.trim() === '') {
+                    setFieldError('id_outras_doencas', "Especifique qual doença.");
+                    isFormValid = false;
+                } else if (outrasDoencasField) {
+                    clearFieldError('id_outras_doencas');
+                }
+
+                // Se houver qualquer falha lógica, aborta o envio do pacote
+                if (!isFormValid) {
+                    event.preventDefault(); // Equivalente a um Break na execução
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

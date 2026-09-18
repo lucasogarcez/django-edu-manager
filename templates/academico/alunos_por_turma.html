@@ -1,0 +1,241 @@
+{% extends "index.html" %}
+{% load static %} {# Carrega tags estáticas, ex: para ícones se não estiverem no index.html #}
+
+{% block title %}Alunos da Turma: {{ turma.modalidade_id.nome }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <nav aria-label="breadcrumb" style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);" class="bg-white p-3 rounded-3 shadow-sm border mb-4">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item">
+                <a href="{% url 'home' %}" class="text-decoration-none text-secondary d-flex align-items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house-door-fill" viewBox="0 0 16 16">
+                    <path d="M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5"/>
+                    </svg>
+                    Início
+                </a>
+            </li>
+            
+            {% if user.is_staff %}
+                <li class="breadcrumb-item">
+                    <a href="{% url 'academico:listar_turmas' %}" class="text-decoration-none text-secondary">Turmas</a>
+                </li>
+            {% else %}
+                <li class="breadcrumb-item">
+                    <a href="{% url 'academico:minhas_turmas' %}" class="text-decoration-none text-secondary">Minhas Turmas</a>
+                </li>
+            {% endif %}
+
+            <li class="breadcrumb-item active fw-bold text-primary" aria-current="page">
+                {{ turma.modalidade_id.nome }} ({{ turma.categoria.nome }})
+            </li>
+        </ol>
+    </nav>
+
+    {# --- CABEÇALHO DA PÁGINA COM AÇÕES DE TURMA --- #}
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h2>
+            Alunos Matriculados
+            <small class="text-muted fs-5 d-block">{{ turma.modalidade_id.nome }} ({{ turma.categoria.nome }})</small>
+        </h2>
+        
+        {# Ações de nível de Turma (para Professores/Admins) #}
+        <div class="d-flex gap-2">
+            {% if perms.academico.add_chamada %}
+                {% if is_dia_de_aula_hoje %}
+                    {# Hoje é um dia de aula normal #}
+                    <a href="{% url 'academico:realizar_chamada' turma.id %}" class="btn btn-success d-flex align-items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-ui-checks me-2" viewBox="0 0 16 16">
+                            <path d="M7 2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5zM2 1a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm0 8a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2zm.854-3.646a.5.5 0 0 1-.708 0l-1-1a.5.5 0 1 1 .708-.708l.646.647 1.646-1.647a.5.5 0 1 1 .708.708zm0 8a.5.5 0 0 1-.708 0l-1-1a.5.5 0 0 1 .708-.708l.646.647 1.646-1.647a.5.5 0 0 1 .708.708zM7 10.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5zm0-5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 8a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5"/>
+                        </svg> 
+                        Realizar Chamada
+                    </a>
+                {% else %}
+                    <a href="{% url 'academico:realizar_chamada' turma.id %}?reposicao=true" class="btn btn-warning d-flex align-items-center" title="Lançar uma chamada em um dia não agendado (ex: reposição, feriado).">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar-plus me-2" viewBox="0 0 16 16">
+                            <path d="M8 7a.5.5 0 0 1 .5.5V9H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V10H6a.5.5 0 0 1 0-1h1.5V7.5A.5.5 0 0 1 8 7"/>
+                            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+                        </svg>
+                        Lançar Aula de Reposição
+                    </a>
+                {% endif %}
+            {% endif %}
+            {% if perms.academico.view_chamada %}
+                <a href="{% url 'academico:historico_chamadas_turma' turma.id %}" class="btn btn-outline-info d-flex align-items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clock-history me-2" viewBox="0 0 16 16">
+                        <path d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022zm2.004.45a7 7 0 0 0-.985-.299l.219-.976q.576.129 1.126.342zm1.37.71a7 7 0 0 0-.439-.27l.493-.87a8 8 0 0 1 .979.654l-.615.789a7 7 0 0 0-.418-.302zm1.834 1.79a7 7 0 0 0-.653-.796l.724-.69q.406.429.747.91zm.744 1.352a7 7 0 0 0-.214-.468l.893-.45a8 8 0 0 1 .45 1.088l-.95.313a7 7 0 0 0-.179-.483m.53 2.507a7 7 0 0 0-.1-1.025l.985-.17q.1.58.116 1.17zm-.131 1.538q.05-.254.081-.51l.993.123a8 8 0 0 1-.23 1.155l-.964-.267q.069-.247.12-.501m-.952 2.379q.276-.436.486-.908l.914.405q-.24.54-.555 1.038zm-.964 1.205q.183-.183.35-.378l.758.653a8 8 0 0 1-.401.432z"/>
+                        <path d="M8 1a7 7 0 1 0 4.95 11.95l.707.707A8.001 8.001 0 1 1 8 0z"/>
+                        <path d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5"/>
+                    </svg> 
+                    Ver Histórico
+                </a>
+            {% endif %}
+            {% if perms.academico.view_chamada %}
+                <a href="{% url 'academico:imprimir_ficha' turma.id hoje.month hoje.year %}" target="_blank" class="btn btn-outline-dark">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer" viewBox="0 0 16 16">
+                        <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
+                        <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1"/>
+                    </svg>
+                    Imprimir Ficha Mensal
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {# --- DETALHES DA TURMA --- #}
+    <div class="card card-body mb-3">
+        <div class="row">
+            <div class="col-md-5">
+                <p class="mb-1">
+                    <strong>Professor(es):</strong> 
+                    {% for prof in turma.professores.all %}
+                        {{ prof.usuario.get_full_name }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                        Nenhum professor associado
+                    {% endfor %}
+                </p>
+                <p class="mb-1">
+                    <strong>Estagiário(s):</strong>
+                    {% for est in turma.estagiarios.all %}
+                        {{ est.usuario.get_full_name }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                        Nenhum estagiário associado
+                    {% endfor %}
+                </p>
+            </div>
+            <div class="col-md-5">
+                <p class="mb-1"><strong>Polo:</strong> {{ turma.polo_id.nome }}</p>
+                <p class="mb-1">
+                    <strong>Horário:</strong> {{ turma.horario|time:"H:i" }} | 
+                    <strong>Dias:</strong> 
+                    {% for dia in turma.dias.all %}
+                        {{ dia.get_dia_semana_display }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                        Dias não definidos
+                    {% endfor %}
+                </p>
+            </div>
+            <div class="col-md-2">
+                {% if perms.academico.change_turma %}
+                    <a href="{% url 'academico:editar_turma' turma.id %}" class="btn btn-warning">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                        <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+                        </svg>
+                        Editar Configurações
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# --- MENSAGENS DE FEEDBACK (EX: ALUNO REMOVIDO) --- #}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {# --- TABELA DE ALUNOS ATIVOS --- #}
+    {% if matriculas_ativas %}
+        <h5 class="mt-4">Alunos Ativos ({{ matriculas_ativas|length }} / {{ turma.capacidade }} vagas)</h5>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Nome Completo</th>
+                        <th scope="col">Data Nasc.</th>
+                        <th scope="col">Documento</th>
+                        <th scope="col">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {# Loop sobre as MATRÍCULAS passadas pela view #}
+                    {% for matricula in matriculas_ativas %}
+                    <tr>
+                        <td>{{ matricula.aluno_id.primeiro_nome }} {{ matricula.aluno_id.ultimo_nome }}</td>
+                        <td>{{ matricula.aluno_id.data_nascimento|date:"d/m/Y" }}</td>
+                        <td>
+                            {% if matricula.aluno_id.cpf %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-vcard text-muted me-1" title="CPF" viewBox="0 0 16 16">
+                                    <path d="M5 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4m4-2.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5M9 8a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4A.5.5 0 0 1 9 8m1 2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5"/>
+                                    <path d="M2 2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zM1 4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H8.96q.04-.245.04-.5C9 10.567 7.21 9 5 9c-2.086 0-3.8 1.398-3.984 3.181A1 1 0 0 1 1 12z"/>
+                                </svg>
+                            {% elif matricula.aluno_id.rg %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-heading text-muted me-1" title="RG" viewBox="0 0 16 16">
+                                    <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2z"/>
+                                    <path d="M3 8.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5m0-5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5z"/>
+                                </svg>
+                            {% endif %}
+                            {{ matricula.aluno_id.documento_exibicao }}
+                        </td>
+                        <td>
+                            {# Botões de Ação para cada aluno #}
+                            <div class="d-flex flex-wrap gap-1 justify-content-center">
+
+                                {# Editar Aluno #}
+                                {% if perms.pessoas.change_aluno %}
+                                    <a href="{% url 'pessoas:editar_aluno' matricula.aluno_id.id %}" class="btn btn-link border-0 p-0 mb-1 ms-3" title="Editar Dados do Aluno">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                                            <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+                                        </svg>
+                                    </a>
+                                {% endif %}
+
+                                {# Editar Atestado do Aluno #}
+                                {% if perms.academico.change_atestado %}
+                                    <a href="{% url 'academico:gerenciar_atestados' matricula.aluno_id.id %}" class="btn text-warning border-0 p-0 mb-1 ms-3" title="Gerenciar Atestados">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-file-earmark-medical" viewBox="0 0 16 16">
+                                            <path d="M7.5 5.5a.5.5 0 0 0-1 0v.634l-.549-.317a.5.5 0 1 0-.5.866L6 7l-.549.317a.5.5 0 1 0 .5.866l.549-.317V8.5a.5.5 0 1 0 1 0v-.634l.549.317a.5.5 0 1 0 .5-.866L8 7l.549-.317a.5.5 0 1 0-.5-.866l-.549.317zm-2 4.5a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 2a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1z"/>
+                                            <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/>
+                                        </svg>
+                                    </a>
+                                {% endif %}
+                                
+                                {# Ver Questionário #}
+                                {% if perms.saude.view_questionariosaude %}
+                                    <a href="{% url 'saude:detalhes_questionario' matricula.aluno_id.id %}" class="btn btn-link border-0 p-0 mb-1 ms-3" title="Ver Questionário de Saúde">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-journal-medical" viewBox="0 0 16 16">
+                                            <path fill-rule="evenodd" d="M8 4a.5.5 0 0 1 .5.5v.634l.549-.317a.5.5 0 1 1 .5.866L9 6l.549.317a.5.5 0 1 1-.5.866L8.5 6.866V7.5a.5.5 0 0 1-1 0v-.634l-.549.317a.5.5 0 1 1-.5-.866L7 6l-.549-.317a.5.5 0 0 1 .5-.866l.549.317V4.5A.5.5 0 0 1 8 4M5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5"/>
+                                            <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2"/>
+                                            <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1z"/>
+                                        </svg>
+                                    </a>
+                                {% endif %}
+                                
+                                {# Remover Matrícula da Turma (Formulário, com permissão) #}
+                                {% if perms.academico.change_matricula %}
+                                    <form action="{% url 'academico:inativar_matricula' matricula.id %}" method="post" 
+                                          onsubmit="return confirm('Tem certeza que deseja REMOVER este aluno DESTA TURMA?');" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-link text-danger border-0 p-0 mb-1 ms-3" title="Remover da Turma">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-slash" viewBox="0 0 16 16">
+                                                <path d="M13.879 10.414a2.501 2.501 0 0 0-3.465 3.465zm.707.707-3.465 3.465a2.501 2.501 0 0 0 3.465-3.465m-4.56-1.096a3.5 3.5 0 1 1 4.949 4.95 3.5 3.5 0 0 1-4.95-4.95ZM11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0M8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m.256 7a4.5 4.5 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10q.39 0 .74.025c.226-.341.496-.65.804-.918Q8.844 9.002 8 9c-5 0-6 3-6 4s1 1 1 1z"/>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>Nenhum aluno ativo matriculado nesta turma no momento.</p>
+    {% endif %}
+
+    <hr>
+    
+    {# Botão para voltar #}
+    <div class="d-flex justify-content-end mb-3">
+        {% include 'components/botao_voltar.html' %}
+    </div>
+</div>
+{% endblock %}

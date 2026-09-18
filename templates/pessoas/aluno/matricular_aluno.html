@@ -1,0 +1,113 @@
+{% extends "index.html" %}
+{% load crispy_forms_tags static %}
+
+{% block title %}Matricular Aluno{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <nav aria-label="breadcrumb" style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);" class="bg-white p-3 rounded-3 shadow-sm border mb-4">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item">
+                <a href="{% url 'home' %}" class="text-decoration-none text-secondary d-flex align-items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house-door-fill" viewBox="0 0 16 16">
+                    <path d="M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5"/>
+                    </svg>
+                    Início
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'pessoas:listar_alunos' %}" class="text-decoration-none text-secondary">Alunos</a>
+            </li>
+            <li class="breadcrumb-item active fw-bold text-primary" aria-current="page">Matricular: {{ aluno.primeiro_nome }}</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="mt-4 mb-4 p-4 border rounded shadow-sm bg-white">
+                
+                <h2>Matricular Aluno</h2>
+                <h4>{{ aluno.primeiro_nome }} {{ aluno.ultimo_nome }}</h4>
+                <p class="text-muted">(DOC: {% if aluno.status_documentacao != 'PENDENTE' %} {{ aluno.documento_exibicao }} {% else %} <span class="fw-bold text-danger">Não registrado</span> {% endif %})</p>
+
+                <hr>
+
+                <h5>Turmas Atuais</h5>
+                {% if matriculas_atuais %}
+                    <ul class="list-group mb-3">
+                    {% for matricula in matriculas_atuais %}
+                        <a href="{% url 'academico:alunos_por_turma' matricula.turma_id.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong class="text-primary">{{ matricula.turma_id }}</strong> 
+                                <span class="text-muted ms-2 fs-6">(Desde: {{ matricula.data_inicio|date:"d/m/Y" }})</span>
+                            </div>
+                            
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-up-right text-muted" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V11.5a.5.5 0 0 0-1 0v2.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h2.636a.5.5 0 0 0 .5-.5z"/>
+                                <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/>
+                            </svg>
+                        </a>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>Este aluno não está matriculado em nenhuma turma ativa.</p>
+                {% endif %}
+
+                <hr>
+                
+                <h5>Adicionar Novas Turmas</h5>
+                <form method="post" id="aluno-questionario-form" novalidate>
+                    {% csrf_token %}
+                    
+                    {# Renderiza o botão "Selecionar Turmas" e o input hidden #}
+                    {% crispy matricula_turma_form matricula_turma_helper %}
+
+                    <div class="modal fade" id="modalSelecaoTurmas" tabindex="-1" aria-labelledby="modalSelecaoTurmasLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                            <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="modalSelecaoTurmasLabel">Selecionar Turmas (Máximo 4)</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text" id="search-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                                        </svg>
+                                    </span>
+                                    <input type="text" class="form-control" id="input-pesquisa-turmas" placeholder="Pesquisar por modalidade, professor, polo, horário, dia..." aria-label="Pesquisar turmas" aria-describedby="search-icon">
+                                </div>
+
+                                <div id="lista-turmas-disponiveis">
+                                    <p>Carregando turmas...</p> 
+                                </div>
+                            </div>
+                            <div class="modal-footer justify-content-between">
+                                <span id="contador-turmas-selecionadas" class="text-muted">0 de 4 selecionadas</span>
+                                <div>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="button" class="btn btn-primary" id="btn-confirmar-selecao-turmas">Confirmar Seleção</button>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end mt-4">
+                        {% include 'components/botao_voltar.html' %}
+                        <button type="submit" class="btn btn-success mt-3 ms-2">Salvar Novas Matrículas</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script id="turmas-data" type="application/json">{{ turmas_json|safe }}</script>
+    <script src="{% static 'js/pessoas/aluno/forms_cadastro_aluno.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Sistema FUNEL{% endblock %}</title>
+
+    {% load static %}
+
+    <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.png' %}">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Tom Select CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.css" rel="stylesheet">
+    
+    <!-- Bloco para estilos específicos da página -->
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+    {% comment %} SIRENE DE AMBIENTE (Watermark/Tarja de Homologação) {% endcomment %}
+    {% if IS_HOMOLOGATION %}
+    <div class="bg-{{ ENV_COLOR }} text-dark text-center py-1 fw-bold w-100 shadow-sm" 
+         style="position: sticky; top: 0; z-index: 99999; font-size: 14px; letter-spacing: 1px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill me-2" viewBox="0 0 16 16">
+            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+        </svg>
+        AMBIENTE DE {{ ENV_NAME|upper }} - OS DADOS AQUI SÃO FICTÍCIOS E DESCARTÁVEIS
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill me-2" viewBox="0 0 16 16">
+            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+        </svg>
+    </div>
+    {% endif %}
+
+    <!-- Navbar ou cabeçalho -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4 sticky-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand fw-bold text-dark d-flex align-items-center gap-2 fs-5 py-0" href="{% url 'home' %}">
+                <figure>
+                    <img src="{% static 'images/logo_funel.png' %}" alt="Logo da FUNEL" height="60" class="d-inline-block align-items-bottom pt-3">
+                </figure>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <ul class="navbar-nav align-items-center mt-2">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'faq' %}">
+                        <p>Ajuda/FAQ</p>
+                    </a>
+                </li>
+            </ul>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                
+                    {% if user.is_authenticated %}
+
+                        {% if user.is_staff %}
+                            <li class="nav-item me-3">
+                                <form action="{% url 'academico:registrar_atendimento_rapido' %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-primary d-flex align-items-center gap-2 shadow-sm" 
+                                            title="Clique para registrar um atendimento rápido">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-headset" viewBox="0 0 16 16">
+                                            <path d="M8 1a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a6 6 0 1 1 12 0v6a2.5 2.5 0 0 1-2.5 2.5H9.366a1 1 0 0 1-.866.5h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 .866.5H11.5A1.5 1.5 0 0 0 13 12h-1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h1V6a5 5 0 0 0-5-5"/>
+                                        </svg>
+                                        Registrar Atendimento
+                                    </button>
+                                </form>
+                            </li>
+                        {% endif %}
+                        
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 fs-6" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                                    <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                                </svg>
+                                Olá, {{ user.first_name|default:user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+                                {% if user.is_staff %}
+                                    <li><a class="dropdown-item" href="{% url 'admin:index' %}">Painel Admin</a></li>
+                                    <li class="nav-item">
+                                        <a class="dropdown-item" href="{% url 'academico:listar_turmas' %}">
+                                        Gerenciar Turmas
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="dropdown-item" href="{% url 'pessoas:listar_alunos' %}">
+                                        Gerenciar Alunos
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                {% if not user.is_staff %}
+                                    <li class="nav-item">
+                                        <a class="dropdown-item" href="{% url 'academico:minhas_turmas' %}">Minhas Turmas</a>
+                                    </li>
+                                {% endif %}
+
+                                <li class="nav-item">
+                                    <a class="dropdown-item" href="{% url 'trocar_senha' %}">Trocar Senha</a>
+                                </li>
+
+                                <li><hr class="dropdown-divider"></li>
+            
+                                {# O logout deve ser um POST, então usamos um formulário #}
+                                <li>
+                                    <form method="post" action="{% url 'logout' %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item text-danger d-flex align-items-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+                                                <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>
+                                                <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
+                                            </svg> 
+                                            Sair
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center gap-2 fs-6" href="{% url 'login' %}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-box-arrow-in-right align-middle" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0z"/>
+                                    <path fill-rule="evenodd" d="M11.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H1.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
+                                </svg>
+                                Entrar
+                            </a>
+                        </li>
+                    {% endif %}
+                
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Conteúdo principal -->
+    <div class="container flex-grow-1">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Rodapé opcional -->
+    <footer class="mt-4 py-3 bg-light text-muted border-top">
+        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
+            <p class="mb-2 mb-md-0 small">
+                &copy; 2025 Lucas Oliveira Garcez - IFTM
+            </p>
+            <a href="{% url 'suporte' %}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-headset" viewBox="0 0 16 16">
+                    <path d="M8 1a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a6 6 0 1 1 12 0v6a2.5 2.5 0 0 1-2.5 2.5H9.366a1 1 0 0 1-.866.5h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 .866.5H11.5A1.5 1.5 0 0 0 13 12h-1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h1V6a5 5 0 0 0-5-5"/>
+                </svg>
+                Relatar Problema / Suporte
+            </a>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Tom Select JS -->
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="toast align-items-center border-0 shadow-lg mb-2 fade" 
+                     role="alert" aria-live="assertive" aria-atomic="true"
+                     data-bs-autohide="{% if message.tags == 'success' %}true{% else %}false{% endif %}"
+                     {% if message.tags == 'success' %}data-bs-delay="5000"{% endif %}> 
+                    
+                    <div class="d-flex">
+                        <div class="toast-body d-flex align-items-center gap-2">
+                            {% if message.tags == 'success' %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#198754" class="bi bi-check-circle-fill flex-shrink-0" viewBox="0 0 16 16">
+                                  <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                                </svg>
+                            {% elif message.tags == 'error' or message.tags == 'danger' %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#dc3545" class="bi bi-x-circle-fill flex-shrink-0" viewBox="0 0 16 16">
+                                  <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8 7.293z"/>
+                                </svg>
+                            {% elif message.tags == 'warning' %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#ffc107" class="bi bi-exclamation-circle-fill flex-shrink-0" viewBox="0 0 16 16">
+                                  <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4m.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/>
+                                </svg>
+                            {% endif %}
+                            
+                            <div class="fw-semibold text-dark">
+                                {{ message }}
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close btn-close-dark me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {  
+            var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+            var toastList = toastElList.map(function (toastEl) {
+                // Cria a instância do Toast e exibe
+                return new bootstrap.Toast(toastEl).show();
+            });
+        });
+    </script>
+
+    <!-- Bloco para scripts específicos da página -->
+    {% block extra_js %}
+    <script>
+        (function() {
+            // Pega o tempo de sessão configurado no Django (em segundos) e converte para ms
+            // Se não estiver definido, usa 3600 (1 hora) como padrão
+            const SESSION_AGE_SECONDS = {{ request.session.get_expiry_age|default:3600 }};
+            const TIMEOUT_MS = SESSION_AGE_SECONDS * 1000; 
+            
+            let idleTimer;
+
+            function redirecionarParaTimeout() {
+                // Redireciona para a página de aviso de inatividade
+                window.location.href = "{% url 'session_idle_timeout' %}";
+            }
+
+            function resetTimer() {
+                clearTimeout(idleTimer);
+                // Reinicia a contagem
+                idleTimer = setTimeout(redirecionarParaTimeout, TIMEOUT_MS);
+            }
+
+            // Eventos que consideram o usuário "ativo"
+            // Você pode adicionar 'scroll' se quiser, mas pode ser pesado
+            const eventosAtividade = ['mousemove', 'keydown', 'click', 'scroll'];
+
+            eventosAtividade.forEach(evento => {
+                window.addEventListener(evento, resetTimer);
+            });
+
+            // Inicia o timer assim que a página carrega
+            resetTimer();
+        })();
+    </script>
+    {% endblock %}
+</body>
+</html>

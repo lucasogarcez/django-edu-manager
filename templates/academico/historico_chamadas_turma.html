@@ -1,0 +1,69 @@
+{% extends "index.html" %}
+{% load crispy_forms_tags %} {# Carregue o crispy para o formulário de filtro #}
+
+{% block title %}Histórico de Chamadas - {{ turma }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <nav aria-label="breadcrumb" style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);" class="bg-white p-3 rounded-3 shadow-sm border mb-4">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item">
+                <a href="{% url 'home' %}" class="text-decoration-none text-secondary d-flex align-items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house-door-fill" viewBox="0 0 16 16">
+                    <path d="M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5"/>
+                    </svg>
+                    Início
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'academico:listar_turmas' %}" class="text-decoration-none text-secondary">Turmas</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'academico:alunos_por_turma' turma.id %}" class="text-decoration-none text-secondary">{{ turma.modalidade_id.nome }}</a>
+            </li>
+            <li class="breadcrumb-item active fw-bold text-primary" aria-current="page">Histórico</li>
+        </ol>
+    </nav>
+
+    <h2>Histórico de Chamadas</h2>
+    <h4>Turma: {{ turma }}</h4>
+
+    {# --- Formulário de Filtro de Data --- #}
+    <form method="get" class="card card-body mb-4">
+        <h5 class="card-title">Filtrar por Data</h5>
+        <div class="row">
+            <div class="col-md-6">
+                {{ filter_form.ano|as_crispy_field }}
+            </div>
+            <div class="col-md-6">
+                {{ filter_form.mes|as_crispy_field }}
+            </div>
+        </div>
+        <div class="d-flex justify-content-end gap-2 mt-3">
+            {# Link para limpar os filtros (reinicia a página sem parâmetros GET) #}
+            <a href="{% url 'academico:historico_chamadas_turma' turma.id %}" class="btn btn-secondary">Limpar Filtros</a>
+            <button type-"submit" class="btn btn-primary">Filtrar</button>
+        </div>
+    </form>
+    {# --- FIM: Formulário de Filtro --- #}
+
+    <h4>Fichas de Chamada Encontradas</h4>
+    {% if chamadas %}
+        <div class="list-group">
+            {% for chamada in chamadas %}
+            <a href="{% url 'academico:detalhe_chamada' chamada.id %}" class="list-group-item list-group-item-action">
+                Ficha de Chamada - Data: <strong>{{ chamada.data_chamada|date:"d/m/Y H:i" }}</strong>
+                {# Você pode adicionar quem realizou a chamada se salvar o 'request.user' nela #}
+            </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Nenhuma chamada foi encontrada para esta turma{% if request.GET.ano or request.GET.mes %} com os filtros aplicados{% endif %}.</p>
+    {% endif %}
+
+    <div class="d-flex justify-content-end mb-3">
+        {% include 'components/botao_voltar.html' %}
+    </div>
+</div>
+{% endblock %}

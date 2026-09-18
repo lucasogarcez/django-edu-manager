@@ -1,0 +1,15 @@
+{% extends "index.html" %}
+{% load static %}
+
+{% block title %}Questionário de Saúde Enviado{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="alert alert-success">
+        <h4>Questionário enviado com sucesso!</h4>
+        <p>Obrigado por preencher o cadastro do aluno.</p>
+        <a href="{% url 'home' %}" class="btn btn-primary mt-2">Voltar para a página inicial</a>
+    </div>
+</div>
+
+{% endblock %}

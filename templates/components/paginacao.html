@@ -1,0 +1,58 @@
+{% if page_obj.has_other_pages %}
+    {# Define valores padrão para telas simples, mas permite injeção nas telas complexas #}
+    {% with param_name=page_param|default:'page' tab=tab_name|default:'' range_list=custom_page_range|default:page_obj.paginator.page_range %}
+    
+    <nav aria-label="Navegação de páginas da tabela">
+        <ul class="pagination justify-content-center">
+            
+            {# Anterior #}
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?{{ param_name }}={{ page_obj.previous_page_number }}{% if termo_busca %}&q={{ termo_busca }}{% endif %}&tab={{ tab_name }}{% for key, value in request.GET.items %}{% if key != param_name and key != 'active_tab' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <span aria-hidden="true">&laquo;</span> Anterior
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">&laquo; Anterior</span>
+                </li>
+            {% endif %} 
+
+            {# Números #}
+            {% for i in range_list %} 
+                {% if i == "..." or i == page_obj.paginator.ELLIPSIS %} 
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                {% else %} 
+                    <li class="page-item {% if page_obj.number == i %}active{% endif %}">
+                        <a class="page-link" href="?{{ param_name }}={{ i }}{% if termo_busca %}&q={{ termo_busca }}{% endif %}&tab={{ tab_name }}{% for key, value in request.GET.items %}{% if key != param_name and key != 'active_tab' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                            {{ i }}
+                        </a>
+                    </li>
+                {% endif %} 
+            {% endfor %} 
+
+            {# Próxima #}
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?{{ param_name }}={{ page_obj.next_page_number }}{% if termo_busca %}&q={{ termo_busca }}{% endif %}&tab={{ tab_name }}{% for key, value in request.GET.items %}{% if key != param_name and key != 'active_tab' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        Próxima <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Próxima &raquo;</span>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    {# Resumo de Registros #}
+    <div class="text-center mt-2 small text-muted">
+        Mostrando {{ page_obj.start_index }} a {{ page_obj.end_index }} de {{ page_obj.paginator.count }} registros 
+        (Total de {{ page_obj.paginator.num_pages }} páginas)
+    </div>
+    
+    {% endwith %}
+{% endif %}

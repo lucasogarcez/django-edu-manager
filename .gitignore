@@ -1,0 +1,46 @@
+# Ambiente virtual
+venv/
+
+# Arquivos Python compilados
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Bancos de dados
+*.sql
+
+# Configurações de IDEs
+.vscode/
+.idea/
+
+# Arquivos de log
+*.log
+
+# Arquivos de migração (opcional)
+# */migrations/
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos de configuração do ambiente
+.env
+env/
+
+# Testes
+htmlcov/
+.coverage
+.coveragerc
+coverage.xml
+.sonar/
+sonar-project.properties
+.pytest_cache/
+
+# Scripts
+sonar.sh
+
+# Arquivos de mídia
+media/
+
+# Arquivos de debug
+debug.txt

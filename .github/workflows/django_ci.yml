@@ -1,0 +1,91 @@
+name: Django CI Tests
+
+# Gatilhos: Rodar em push para 'main' ou em Pull Requests para 'main'
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest # Usar um runner Linux (padrão para CI)
+    
+    # Define um serviço de banco de dados PostgreSQL (recomendado)
+    # Se você usa SQLite para testes, pode remover esta seção 'services'
+    # e ajustar a configuração do Django abaixo.
+    services:
+      postgres:
+        image: postgres:16 # Use a versão do Postgres que você usa
+        env:
+          POSTGRES_DB: test_db       # Nome do banco de teste
+          POSTGRES_USER: test_user   # Usuário de teste
+          POSTGRES_PASSWORD: test_password # Senha de teste
+        ports:
+          - 5432:5432 # Mapeia a porta do container para o runner
+        # Opções para garantir que o Postgres esteja pronto antes de continuar
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    
+    env:
+      # Credenciais do banco de dados (devem bater com a seção 'services')
+      DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db # Ou use variáveis separadas
+      POSTGRES_DB: test_db
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_HOST: localhost # O runner acessa o serviço via localhost
+      POSTGRES_PORT: 5432      # Porta mapeada
+        
+      # Configuração do Django (essencial)
+      DJANGO_SECRET_KEY: 'dummy-secret-key-for-ci' # Qualquer valor serve para testes
+      DJANGO_ENV: dev # Use seu settings de DESENVOLVIMENTO ou TESTE conforme necessário
+      DJANGO_ALLOW_ASYNC_UNSAFE: "true" # Necessário para Playwright + Django ORM
+
+      EMAIL_HOST: 'localhost'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4 # Baixa seu código
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12' # Use a versão Python do seu projeto
+        cache: 'pip' # Habilita cache para dependências pip
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-dev.txt # Instala a partir do seu arquivo
+
+    - name: Install Playwright Browsers
+      run: python -m playwright install --with-deps # Instala navegadores e dependências do OS
+      # Cache para os navegadores Playwright (acelera futuras execuções)
+    - name: Cache Playwright browsers
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ hashFiles('**/pyproject.toml', '**/requirements-dev.txt') }}
+        restore-keys: |
+          playwright-${{ runner.os }}-
+
+    - name: Run Django Migrations
+      run: python manage.py migrate
+      # As env vars acima precisam estar definidas ANTES deste passo
+
+    - name: Run Pytest tests with Coverage
+      run: |
+        pytest --cov=. --cov-report=xml
+        # '--cov=.' mede a cobertura de todo o projeto
+        # '--cov-report=xml' gera um arquivo coverage.xml (para Codecov/Coveralls)
+
+    # --- Opcional: Enviar Relatório de Cobertura para Codecov ---
+    # - name: Upload coverage reports to Codecov
+    #   uses: codecov/codecov-action@v4
+    #   with:
+    #     token: ${{ secrets.CODECOV_TOKEN }} # Adicione este token nos segredos do seu repo GitHub
+    #     fail_ci_if_error: true

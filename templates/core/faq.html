@@ -1,0 +1,132 @@
+{% extends 'index.html' %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    
+    <div class="row mb-4 align-items-center">
+        <div class="col-8">
+            <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-life-preserver text-primary" viewBox="0 0 16 16">
+                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m6.43-5.228a7.03 7.03 0 0 1-3.658 3.658l-1.115-2.788a4 4 0 0 0 1.985-1.985zM5.228 14.43a7.03 7.03 0 0 1-3.658-3.658l2.788-1.115a4 4 0 0 0 1.985 1.985zm9.202-9.202-2.788 1.115a4 4 0 0 0-1.985-1.985l1.115-2.788a7.03 7.03 0 0 1 3.658 3.658m-8.087-.87a4 4 0 0 0-1.985 1.985L1.57 5.228A7.03 7.03 0 0 1 5.228 1.57zM8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
+                </svg>
+                Central de Ajuda do Sistema
+            </h2>
+            <p class="text-muted">Selecione uma categoria abaixo para expandir as dúvidas mais comuns.</p>
+        </div>
+
+        <div class="col-md-4 text-md-end">
+            <!-- Renderiza botão extra para Administradores acessarem a Estação de Triagem -->
+            {% if request.user.is_staff %}
+                <a href="{% url 'moderar_faq' %}" class="btn btn-warning shadow-sm me-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-shield-lock" viewBox="0 0 16 16">
+                        <path d="M5.338 1.59a61 61 0 0 0-2.837.856.48.48 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.7 10.7 0 0 0 2.287 2.233c.346.244.652.42.893.533q.18.085.293.118a1 1 0 0 0 .101.025 1 1 0 0 0 .1-.025q.114-.034.294-.118c.24-.113.547-.29.893-.533a10.7 10.7 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.8 11.8 0 0 1-2.517 2.453 7 7 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7 7 0 0 1-1.048-.625 11.8 11.8 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 63 63 0 0 1 5.072.56"/>
+                        <path d="M9.5 6.5a1.5 1.5 0 0 1-1 1.415l.385 1.99a.5.5 0 0 1-.491.595h-.788a.5.5 0 0 1-.49-.595l.384-1.99a1.5 1.5 0 1 1 2-1.415"/>
+                    </svg>
+                    Moderação
+                </a>
+            {% endif %}
+
+            <button type="button" class="btn btn-outline-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#modalSugerirFaq">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                </svg>
+                Sugerir Nova Pergunta
+            </button>
+        </div>
+    </div>
+
+    {% for categoria in categorias %}
+        
+        {% if categoria.perguntas.all %}
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-light border-0 pt-3 pb-3">
+                    <h5 class="mb-0 fw-bold">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-folder2-open" viewBox="0 0 16 16">
+                            <path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v.64c.57.265.94.876.856 1.546l-.64 5.124A2.5 2.5 0 0 1 12.733 15H3.266a2.5 2.5 0 0 1-2.481-2.19l-.64-5.124A1.5 1.5 0 0 1 1 6.14zM2 6h12v-.5a.5.5 0 0 0-.5-.5H9c-.964 0-1.71-.629-2.174-1.154C6.374 3.334 5.82 3 5.264 3H2.5a.5.5 0 0 0-.5.5zm-.367 1a.5.5 0 0 0-.496.562l.64 5.124A1.5 1.5 0 0 0 3.266 14h9.468a1.5 1.5 0 0 0 1.489-1.314l.64-5.124A.5.5 0 0 0 14.367 7z"/>
+                        </svg>
+                        {{ categoria.nome }}
+                    </h5>
+                </div>
+                
+                <div class="card-body p-0">
+                    <div class="accordion accordion-flush" id="accordionCategoria{{ categoria.id }}">
+                        
+                        {% for item in categoria.perguntas.all %}
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="heading{{ item.id }}">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ item.id }}" aria-expanded="false" aria-controls="collapse{{ item.id }}">
+                                        <strong>{{ item.pergunta }}</strong>
+                                    </button>
+                                </h2>
+                                <div id="collapse{{ item.id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ item.id }}" data-bs-parent="#accordionCategoria{{ categoria.id }}">
+                                    <div class="accordion-body text-secondary">
+                                        {{ item.resposta|linebreaksbr }}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        
+    {% empty %}
+        <div class="alert alert-info shadow-sm" role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
+                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+            </svg>
+            Nenhuma documentação foi cadastrada no sistema ainda.
+        </div>
+    {% endfor %}
+
+</div>
+
+<!-- ======================================================================= -->
+<!-- MÓDULO POP-UP: MODAL DE INGESTÃO DE DADOS (SUGESTÃO)                    -->
+<!-- ======================================================================= -->
+<div class="modal fade" id="modalSugerirFaq" tabindex="-1" aria-labelledby="modalSugerirFaqLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <!-- O action vazio ("") submete o POST para a mesma View que gerou a tela (painel_faq) -->
+            <form method="POST" action="">
+                {% csrf_token %}
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalSugerirFaqLabel">Sugerir Nova Pergunta</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">
+                        Não encontrou o que procurava? Ajude-nos a melhorar a plataforma enviando uma sugestão. 
+                        A sua pergunta será avaliada pela equipe de Diretoria antes de ser publicada.
+                    </p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Categoria da Dúvida</label>
+                        {{ faq_form.categoria }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Qual é a Pergunta?</label>
+                        {{ faq_form.pergunta }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Resposta Sugerida (Opcional)</label>
+                        {{ faq_form.resposta }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abortar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
+                            <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
+                        </svg>
+                        Transmitir para Moderação
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
