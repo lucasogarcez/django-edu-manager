@@ -1,0 +1,165 @@
+{% extends "index.html" %}
+{% load static %}
+
+{% block title %}Minhas Turmas{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    /* Efeito de hover no card */
+    .card-turma {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        cursor: pointer;
+    }
+    .card-turma:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+        border-color: #0d6efd;
+    }
+    
+    /* Estilo para centralizar os ícones SVG */
+    .icon-box {
+        width: 24px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-right: 8px;
+        color: #6c757d;
+    }
+    .card-turma:hover .icon-box {
+        color: #0d6efd;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    
+    {# --- Breadcrumb (Estilo Moderno - SVG já incluído) --- #}
+    <nav aria-label="breadcrumb" 
+         style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);"
+         class="bg-white p-3 rounded-3 shadow-sm border mb-4">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item">
+            <a href="{% url 'home' %}" class="text-decoration-none text-secondary d-flex align-items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house-door-fill" viewBox="0 0 16 16">
+                  <path d="M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5"/>
+                </svg>
+                Início
+            </a>
+        </li>
+        <li class="breadcrumb-item active fw-bold text-primary" aria-current="page">Minhas Turmas</li>
+      </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0">Minhas Turmas</h2>
+            <p class="text-muted">Gerencie suas aulas e frequências.</p>
+        </div>
+
+        {% include 'components/botao_voltar.html' %}
+    </div>
+
+    {% if turmas %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for turma in turmas %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0 border-start border-4 border-primary card-turma position-relative">
+                        <div class="card-body d-flex flex-column">
+                            
+                            {# Cabeçalho do Card #}
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h5 class="card-title fw-bold mb-1 text-primary">
+                                        {{ turma.modalidade_id.nome }}
+                                    </h5>
+                                    <span class="badge bg-light text-dark border">
+                                        {{ turma.categoria.nome }}
+                                    </span>
+                                </div>
+                                <div class="text-end">
+                                    <h4 class="mb-0 fw-light">{{ turma.horario|time:"H:i" }}</h4>
+                                </div>
+                            </div>
+
+                            <hr class="my-2 opacity-25">
+
+                            {# Detalhes (Dias e Local) #}
+                            <div class="mb-3 mt-2">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="icon-box">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-calendar-week" viewBox="0 0 16 16">
+                                          <path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z"/>
+                                          <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+                                        </svg>
+                                    </div>
+                                    <span class="fw-medium">{{ turma.get_dias_semana }}</span>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-box">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16">
+                                          <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
+                                        </svg>
+                                    </div>
+                                    <span>{{ turma.polo_id.nome }}</span>
+                                </div>
+                            </div>
+
+                            {# Equipe (Professores/Estagiários) #}
+                            <div class="mt-auto pt-3 border-top text-muted small">
+                                <div class="d-flex align-items-start mb-1">
+                                    <div class="icon-box" style="width: 20px; margin-right: 5px;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-person-badge" viewBox="0 0 16 16">
+                                          <path d="M6.5 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                                          <path d="M4.5 0A2.5 2.5 0 0 0 2 2.5V14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2.5A2.5 2.5 0 0 0 11.5 0zM3 2.5A1.5 1.5 0 0 1 4.5 1h7A1.5 1.5 0 0 1 13 2.5v10.795a4.2 4.2 0 0 0-.776-.492C11.392 12.387 10.063 12 8 12s-3.392.387-4.224.803a4.2 4.2 0 0 0-.776.492z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <strong>Prof(s):</strong> 
+                                        {% for prof in turma.professores.all %}
+                                            {{ prof.usuario.get_full_name }}{% if not forloop.last %}, {% endif %}
+                                        {% empty %} - {% endfor %}
+                                    </div>
+                                </div>
+                                {% if turma.estagiarios.exists %}
+                                    <div class="d-flex align-items-start">
+                                        <div class="icon-box" style="width: 20px; margin-right: 5px;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-mortarboard" viewBox="0 0 16 16">
+                                              <path d="M8.211 2.047a.5.5 0 0 0-.422 0l-7.5 3.5a.5.5 0 0 0 .025.917l7.5 3a.5.5 0 0 0 .372 0L14 7.14V13a1 1 0 0 0-1 1v2h3v-2a1 1 0 0 0-1-1V6.739l.686-.275a.5.5 0 0 0 .025-.917zM8 8.46 1.758 5.965 8 3.052l6.242 2.913z"/>
+                                              <path d="M4.176 9.032a.5.5 0 0 0-.656.327l-.5 1.7a.5.5 0 0 0 .294.605l4.5 1.8a.5.5 0 0 0 .372 0l4.5-1.8a.5.5 0 0 0 .294-.605l-.5-1.7a.5.5 0 0 0-.656-.327L8 10.466zm-.068 1.873.22-.748 3.496 1.317a.5.5 0 0 0 .352 0l3.496-1.317.22.748L8 12.46l-3.892-1.556z"/>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <strong>Est(s):</strong>
+                                            {% for est in turma.estagiarios.all %}
+                                                {{ est.usuario.get_full_name }}{% if not forloop.last %}, {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            {# Link invisível que cobre todo o card #}
+                            <a href="{% url 'academico:alunos_por_turma' turma.id %}" class="stretched-link"></a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        {# Empty State (Estado Vazio) #}
+        <div class="text-center py-5 bg-light rounded-3">
+            <div class="mb-3 text-muted">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-journal-x" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd" d="M6.146 6.146a.5.5 0 0 1 .708 0L8 7.293l1.146-1.147a.5.5 0 1 1 .708.708L8.707 8l1.147 1.146a.5.5 0 0 1-.708.708L8 8.707 6.854 9.854a.5.5 0 0 1-.708-.708L7.293 8 6.146 6.854a.5.5 0 0 1 0-.708"/>
+                  <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2"/>
+                  <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1z"/>
+                </svg>
+            </div>
+            <h3 class="mt-3 text-secondary">Nenhuma turma encontrada</h3>
+            <p class="text-muted">Você não está vinculado a nenhuma turma como professor ou estagiário no momento.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

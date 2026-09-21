@@ -1,0 +1,56 @@
+{% extends "index.html" %}
+{% load static %}
+
+{% block title %}Detalhe da Chamada{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Ficha de Chamada (Detalhes)</h2>
+    <hr>
+    <h5>Turma: {{ chamada.turma_id }}</h5>
+    <h5>Data: {{ chamada.data_chamada|date:"d/m/Y H:i" }}</h5>
+
+    {% if presencas %}
+        <table class="table table-striped table-bordered text-center">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col">Aluno</th>
+                    <th scope="col">Status da Presença</th>
+                    <th scope="col">Observações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for presenca in presencas %}
+                <tr>
+                    <td>{{ presenca.aluno_id.primeiro_nome }} {{ presenca.aluno_id.ultimo_nome }}</td>
+                    <td>
+                        {# Adiciona cores com badges do Bootstrap #}
+                        {% if presenca.status == 'PRESENTE' %}
+                            <span class="badge bg-success">{{ presenca.get_status_display }}</span>
+                        {% elif presenca.status == 'FALTA' %}
+                            <span class="badge bg-danger">{{ presenca.get_status_display }}</span>
+                        {% elif presenca.status == 'ATESTADO' %}
+                            <span class="badge bg-info text-dark">{{ presenca.get_status_display }}</span>
+                        {% else %} {# Falta Justificada, Atraso, etc. #}
+                            <span class="badge bg-warning text-dark">{{ presenca.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ presenca.observacoes|default:"-" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Nenhum registro de presença foi encontrado para esta chamada.</p>
+    {% endif %}
+
+    <div class="d-flex justify-content-end mb-3">
+        {% include 'components/botao_voltar.html' %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    {{ block.super }}
+    <script src="{% static 'js/academico/listar_turmas_filtros.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "index.html" %}
+
+{% block title %}Questionário de Saúde - {{ aluno.primeiro_nome }} {{ aluno.ultimo_nome }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Questionário de Saúde de {{ aluno.primeiro_nome }} {{ aluno.ultimo_nome }}</h2>
+    {% if questionario %}
+        <div class="card">
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">Desmaia ou tem vertigens?</dt>
+                    <dd class="col-sm-8">{% if questionario.desmaios_ou_vertigens %}Sim{% else %}Não{% endif %}</dd>
+
+                    <dt class="col-sm-4">Doenças diagnosticadas:</dt>
+                    <dd class="col-sm-8">
+                        {% for doenca in questionario.doencas.all %}
+                            {{ doenca.nome }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            Nenhuma selecionada
+                        {% endfor %}
+                    </dd>
+
+                    {% if questionario.outras_doencas %}
+                    <dt class="col-sm-4">Outras doenças especificadas:</dt>
+                    <dd class="col-sm-8">{{ questionario.outras_doencas }}</dd>
+                    {% endif %}
+                    
+                    <dt class="col-sm-4">Histórico cardíaco familiar?</dt>
+                    <dd class="col-sm-8">{% if questionario.historico_cardiaco_familiar %}Sim{% else %}Não{% endif %}</dd>
+
+                    <dt class="col-sm-4">Pratica exercício regularmente?</dt>
+                    <dd class="col-sm-8">{% if questionario.pratica_exercicio %}Sim{% else %}Não{% endif %}</dd>
+
+                    {% if questionario.pratica_exercicio %}
+                    <dt class="col-sm-4">Tipo(s) de exercício:</dt>
+                    <dd class="col-sm-8">{{ questionario.tipo_exercicio|default:"Não informado" }}</dd>
+
+                    <dt class="col-sm-4">Frequência:</dt>
+                    <dd class="col-sm-8">{{ questionario.get_frequencia_exercicio_display|default:"Não informado" }}</dd> {% endif %}
+
+                    <dt class="col-sm-4">Objetivos:</dt>
+                    <dd class="col-sm-8">
+                        {% for objetivo in questionario.objetivos.all %}
+                            {{ objetivo.nome }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            Nenhum selecionado
+                        {% endfor %}
+                    </dd>
+                    
+                    {% if questionario.outros_objetivos %}
+                    <dt class="col-sm-4">Outros objetivos especificados:</dt>
+                    <dd class="col-sm-8">{{ questionario.outros_objetivos }}</dd>
+                    {% endif %}
+
+                    <dt class="col-sm-4">Declarou estar apto?</dt>
+                    <dd class="col-sm-8">{% if questionario.declaracao_aptidao %}Sim{% else %}Não{% endif %}</dd>
+                    
+                    <dt class="col-sm-4">Declarou condição especial?</dt>
+                    <dd class="col-sm-8">{% if questionario.declaracao_condicao_especial %}Sim{% else %}Não{% endif %}</dd>
+
+                </dl>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-warning" role="alert">
+            Este aluno ainda não possui um questionário de saúde registrado.
+        </div>
+    {% endif %}
+
+    <div class="d-flex justify-content-end mb-3">
+        {% include 'components/botao_voltar.html' %}
+    </div>
+
+</div>
+{% endblock %}

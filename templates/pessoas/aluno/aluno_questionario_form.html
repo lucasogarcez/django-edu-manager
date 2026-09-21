@@ -1,0 +1,170 @@
+{% extends "index.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Cadastro de Aluno{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pessoas/aluno/forms_cadastro_aluno.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    
+    <div class="col-lg-6 col-md-8">
+
+        <div class="mt-4 mb-4 p-4 border rounded shadow-sm bg-white ">
+            <h2>Cadastro do Aluno</h2>
+
+            <form method="post" enctype="multipart/form-data" id="aluno-questionario-form" novalidate>
+                {% csrf_token %}
+
+                <!-- Abas -->
+                <ul class="nav nav-tabs" id="formTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {% if active_tab == 'aluno' %}active{% endif %}" id="aluno-tab" data-bs-toggle="tab" data-bs-target="#aluno" type="button" role="tab">Dados do Aluno</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {% if active_tab == 'questionario' %}active{% endif %}" id="questionario-tab" data-bs-toggle="tab" data-bs-target="#questionario" type="button" role="tab">Questionário de Saúde</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {% if active_tab == 'atestado' %}active{% endif %}" id="atestado-tab" data-bs-toggle="tab" data-bs-target="#atestado" type="button" role="tab">Atestado Médico</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                       <button class="nav-link {% if active_tab == 'modalidade' %}active{% endif %}" id="modalidade-tab" data-bs-toggle="tab" data-bs-target="#modalidade" type="button" role="tab">Modalidade</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content mt-3" id="formTabsContent">
+                    <!-- Aba Aluno -->
+                    <div class="tab-pane fade {% if active_tab == 'aluno' %}show active{% endif %}" id="aluno" role="tabpanel">
+                        <div class="card p-3 mb-3">
+                            <h5>Informações do Aluno</h5>
+                            {% crispy aluno_form aluno_helper %}
+
+                            <div class="d-flex justify-content-end mt-3">
+                                <button class="btn btn-primary" id="btn-validar-e-proximo" type="button">Próximo</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Aba Questionário -->
+                    <div class="tab-pane fade {% if active_tab == 'questionario' %}show active{% endif %}" id="questionario" role="tabpanel">
+                        <div class="card p-3 mb-3">
+                            <h5>Questionário de Saúde</h5>
+                            {% crispy questionario_form questionario_helper %}
+
+                            <div class="d-flex justify-content-end mt-3">
+                                <button class="btn btn-primary" id="btn-questionario-proximo" type="button">Próximo</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Aba Atestado -->
+                    <div class="tab-pane fade {% if active_tab == 'atestado' %}show active{% endif %}" id="atestado" role="tabpanel">
+                        <div class="card p-3 mb-3">
+                                <h5>Atestado de Aptidão Física</h5>
+                                <p class="text-muted small">Anexe o documento oficial. Este passo pode ser ignorado e preenchido posteriormente, caso o aluno ainda não possua o atestado.</p>
+                            
+                            <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="id_data_atestado_aptidao" class="form-label fw-bold">Data de Emissão do Atestado</label>
+                                        {{ questionario_form.data_atestado_aptidao }}
+                                        <div class="form-text">A validade será calculada automaticamente a partir desta data.</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="id_arquivo_atestado" class="form-label fw-bold text-primary">Upload do Atestado (PDF, PNG, JPG)</label>
+                                        {{ questionario_form.arquivo_atestado }}
+                                        <div class="form-text">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-paperclip" viewBox="0 0 16 16">
+                                                <path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0z"/>
+                                            </svg>
+                                            Opcional neste momento.
+                                        </div>
+                                        <div class="form-text">
+                                            <i>Atenção: Em caso de erro no formulário, o anexo precisará ser selecionado novamente.</i>
+                                        </div>
+                                    </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-end mt-3">
+                                <button type="button" class="btn btn-primary" id="btn-atestado-proximo">Próximo</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Aba Modalidade -->
+                    <div class="tab-pane fade {% if active_tab == 'modalidade' %}show active{% endif %}" id="modalidade" role="tabpanel">
+                        <div class="card p-3 mb-3">
+                            <h5>Modalidade</h5>
+                            {% crispy matricula_turma_form matricula_turma_helper %}
+
+                            <div class="modal fade" id="modalSelecaoTurmas" tabindex="-1" aria-labelledby="modalSelecaoTurmasLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="modalSelecaoTurmasLabel">Selecionar Turmas (Máximo 4)</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="input-group mb-3">
+                                                <span class="input-group-text" id="search-icon">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                                                    </svg>
+                                                </span>
+                                                <input type="text" class="form-control" id="input-pesquisa-turmas" placeholder="Pesquisar por modalidade, professor, polo, horário, dia..." aria-label="Pesquisar turmas" aria-describedby="search-icon">
+                                            </div>
+                                        
+                                            <div id="lista-turmas-disponiveis">
+                                                <p>Carregando turmas...</p> 
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer justify-content-between">
+                                            <span id="contador-turmas-selecionadas" class="text-muted">0 de 4 selecionadas</span>
+                                            <div>
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                <button type="button" class="btn btn-primary" id="btn-confirmar-selecao-turmas">Confirmar Seleção</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end mt-3">
+                                <button type="submit" class="btn btn-primary">Salvar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="confirmacaoModal" tabindex="-1" aria-labelledby="confirmacaoModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmacaoModalLabel">Confirmar Informações</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body" id="confirmacaoModalBody">
+        <p>Carregando...</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar e Voltar</button>
+        <button type="button" class="btn btn-success" id="btnConfirmarSalvar">Confirmar e Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pessoas/aluno/forms_cadastro_aluno.js' %}"></script>
+<script id="turmas-data" type="application/json">{{ turmas_json|safe }}</script>
+{% endblock %}

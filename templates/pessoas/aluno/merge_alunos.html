@@ -1,0 +1,98 @@
+{% extends 'index.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-danger">
+                <div class="card-header bg-danger text-white d-flex align-items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill me-2" viewBox="0 0 16 16">
+                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                    </svg>
+                    <h5 class="mb-0">Painel de Multiplexação de Cadastros (Merge)</h5>
+                </div>
+                
+                <div class="card-body">
+                    <p class="text-muted">
+                        <strong>Aviso de Engenharia:</strong> Esta ferramenta transfere todos os registros (turmas, chamadas, etc) de um cadastro "Errado" para o "Correto". O cadastro de origem será transformado num nó fantasma (Soft Delete).
+                    </p>
+
+                    <form id="formMerge" method="POST" action="{% url 'pessoas:painel_merge_alunos' %}">
+                        {% csrf_token %}
+
+                        <!-- PIN 1: ORIGEM (O que vai sumir) -->
+                        <div class="mb-4">
+                            <label for="aluno_origem" class="form-label text-danger fw-bold">
+                                1. Cadastro Duplicado / Errado (Origem)
+                            </label>
+                            <select class="form-select tomselect-ativo" id="aluno_origem" name="aluno_origem" required>
+                                <option value="">--- Selecione o aluno que possui dados errados ---</option>
+                                {% for aluno in alunos %}
+                                    <option value="{{ aluno.id }}">{{ aluno.primeiro_nome }} {{ aluno.ultimo_nome }} (DOC: {{ aluno.documento_exibicao }})</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Este cadastro perderá todos os vínculos e ficará oculto.</div>
+                        </div>
+
+                        <!-- PIN 2: DESTINO (O que vai receber os dados) -->
+                        <div class="mb-4">
+                            <label for="aluno_destino" class="form-label text-success fw-bold">
+                                2. Cadastro Principal / Correto (Destino)
+                            </label>
+                            <select class="form-select tomselect-ativo" id="aluno_destino" name="aluno_destino" required>
+                                <option value="">--- Selecione o aluno que receberá os dados ---</option>
+                                {% for aluno in alunos %}
+                                    <option value="{{ aluno.id }}">{{ aluno.primeiro_nome }} {{ aluno.ultimo_nome }} (DOC: {{ aluno.documento_exibicao }})</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Este é o cadastro principal que continuará existindo no sistema.</div>
+                        </div>
+
+                        <!-- BOTÃO DE ACIONAMENTO COM INTERLOCK -->
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-warning fw-bold text-dark" data-bs-toggle="modal" data-bs-target="#modalSeguranca">
+                                Executar Transferência de Dados
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL RELÉ DE SEGURANÇA (INTERLOCK) -->
+<div class="modal fade" id="modalSeguranca" tabindex="-1" aria-labelledby="modalSegurancaLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content border-warning">
+      <div class="modal-header bg-warning text-dark">
+        <h5 class="modal-title fw-bold" id="modalSegurancaLabel">Confirmação de Hardware</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Você está prestes a fundir dois registros. Esta operação é segura, mas alterará profundamente o banco de dados.<br><br>
+        <strong>Confirma que selecionou os terminais corretos?</strong>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abortar</button>
+        <!-- Disparo real do formulário -->
+        <button type="button" class="btn btn-danger" onclick="document.getElementById('formMerge').submit();">
+            Sim, Transferir Dados
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Inicialização do TomSelect (se você usar na sua UI) -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll('.tomselect-ativo').forEach(function(el) {
+            new TomSelect(el, {
+                create: false,
+                sortField: { field: "text", direction: "asc" }
+            });
+        });
+    });
+</script>
+{% endblock %}

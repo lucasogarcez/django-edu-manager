@@ -1,0 +1,52 @@
+# ==========================================
+# DEFINIÇÃO DOS MÓDULOS (SERVIÇOS)
+# ==========================================
+services:
+  # 1. Módulo de Banco de Dados (PostgreSQL)
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    # Variáveis de ambiente atuam como chaves de configuração dos registradores
+    env_file:
+      - .env
+    # Monta a memória não-volátil (EEPROM) para o banco não resetar se o contêiner desligar
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # Isola o banco em um barramento interno
+    networks:
+      - rede_interna
+
+  # 2. Módulo de Lógica e IHM (Sua Aplicação Django)
+  web:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    # Exposição das portas GPIO: Roteia a porta 8000 interna para a 8000 do servidor físico
+    ports:
+      - "${PORTA_EXTERNA}:8000"
+    # Injeta o arquivo oculto contendo as variáveis sensíveis (SECRET_KEY, senhas do banco)
+    env_file:
+      - .env
+    # Mapeamento de persistência de mídia (os uploads dos atestados)
+    volumes:
+      - media_data:/app/media
+    # Regra de intertravamento lógico: O servidor web só liga APÓS o banco dar sinal de vida
+    depends_on:
+      - db
+    networks:
+      - rede_interna
+
+# ==========================================
+# DEFINIÇÃO DE MEMÓRIAS NÃO-VOLÁTEIS (VOLUMES)
+# ==========================================
+volumes:
+  postgres_data:
+  media_data:
+
+# ==========================================
+# DEFINIÇÃO DO BARRAMENTO (NETWORKS)
+# ==========================================
+networks:
+  rede_interna:
+    driver: bridge

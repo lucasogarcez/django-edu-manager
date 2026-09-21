@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acesso Bloqueado</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        /* Animação suave de pulso para o relógio */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+        .timer-pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body class="bg-light d-flex align-items-center justify-content-center vh-100">
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card shadow-lg border-0 border-top border-danger border-5 rounded-3">
+                    <div class="card-body p-5 text-center">
+                        
+                        <!-- Ícone de Alerta -->
+                        <div class="mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="currentColor" class="bi bi-shield-lock-fill text-danger" style="font-size: 4rem;" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M8 0c-.69 0-1.843.265-2.928.56-1.11.3-2.229.655-2.887.87a1.54 1.54 0 0 0-1.044 1.262c-.596 4.477.787 7.795 2.465 9.99a11.8 11.8 0 0 0 2.517 2.453c.386.273.744.482 1.048.625.28.132.581.24.829.24s.548-.108.829-.24a7 7 0 0 0 1.048-.625 11.8 11.8 0 0 0 2.517-2.453c1.678-2.195 3.061-5.513 2.465-9.99a1.54 1.54 0 0 0-1.044-1.263 63 63 0 0 0-2.887-.87C9.843.266 8.69 0 8 0m0 5a1.5 1.5 0 0 1 .5 2.915l.385 1.99a.5.5 0 0 1-.491.595h-.788a.5.5 0 0 1-.49-.595l.384-1.99A1.5 1.5 0 0 1 8 5"/>
+                            </svg>
+                        </div>
+                        
+                        <h3 class="fw-bold text-dark mb-3">Acesso Temporariamente Bloqueado</h3>
+                        
+                        <p class="text-muted mb-4">
+                            Detectamos múltiplas tentativas de login com senha incorreta. 
+                            Por medidas de segurança para proteger sua conta, <strong>este dispositivo foi bloqueado</strong>.
+                        </p>
+
+                        <div class="alert alert-warning mb-4">
+                            <div class="small mb-2 text-uppercase fw-bold text-secondary">
+                                Tempo restante para liberação:
+                            </div>
+                            <!-- O Relógio -->
+                            <div class="display-4 fw-bold text-dark timer-pulse" style="font-family: monospace;" id="contador">
+                                15:00
+                            </div>
+                            <div class="small mt-2 text-muted">
+                                A página será redirecionada automaticamente.
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 small text-muted">
+                            Se você esqueceu sua senha, contate a <span class="fw-bold">Secretaria</span> ou o <span class="fw-bold">Suporte Técnico</span>.
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // 1. Configuração do Tempo (10 minutos em milissegundos)
+            const TEMPO_BLOQUEIO_MS = 10 * 60 * 1000; 
+            
+            // 2. Busca na memória do navegador se já existe um bloqueio em andamento
+            let tempoDesbloqueio = localStorage.getItem('axes_unlock_time');
+            const agora = new Date().getTime();
+
+            // 3. Se não tem bloqueio salvo, ou se o antigo já venceu (novo bloqueio), cria um novo
+            if (!tempoDesbloqueio || agora > parseInt(tempoDesbloqueio)) {
+                tempoDesbloqueio = agora + TEMPO_BLOQUEIO_MS;
+                localStorage.setItem('axes_unlock_time', tempoDesbloqueio);
+            }
+
+            const elementoContador = document.getElementById('contador');
+            
+            // 4. Motor do Relógio (Roda a cada 1 segundo)
+            const intervalo = setInterval(function() {
+                const tempoAtual = new Date().getTime();
+                const distancia = tempoDesbloqueio - tempoAtual;
+
+                // 5. O tempo acabou!
+                if (distancia <= 0) {
+                    clearInterval(intervalo); // Para o relógio
+                    localStorage.removeItem('axes_unlock_time'); // Limpa a memória
+                    elementoContador.innerHTML = "00:00";
+                    
+                    // Disjuntor de Redirecionamento Automático
+                    window.location.href = "{% url 'login' %}"; 
+                } else {
+                    // 6. Calcula e desenha os minutos e segundos na tela
+                    let minutos = Math.floor((distancia % (1000 * 60 * 60)) / (1000 * 60));
+                    let segundos = Math.floor((distancia % (1000 * 60)) / 1000);
+                    
+                    // Adiciona o "0" na frente se for menor que 10 (ex: 09:05)
+                    minutos = minutos < 10 ? "0" + minutos : minutos;
+                    segundos = segundos < 10 ? "0" + segundos : segundos;
+                    
+                    elementoContador.innerHTML = minutos + ":" + segundos;
+                }
+            }, 1000); // 1000ms = 1 segundo
+        });
+    </script>
+
+</body>
+</html>

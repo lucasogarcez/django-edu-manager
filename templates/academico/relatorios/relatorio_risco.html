@@ -1,0 +1,425 @@
+{% extends "index.html" %}
+
+{% block title %}Relatórios de Risco{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    
+    <nav aria-label="breadcrumb" class="bg-white p-3 rounded-3 shadow-sm border mb-4">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item">
+                <a href="{% url 'home' %}" class="text-decoration-none text-secondary d-flex align-items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house-door-fill" viewBox="0 0 16 16">
+                        <path d="M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5"/>
+                    </svg>
+                    Início
+                </a>
+            </li>
+            <li class="breadcrumb-item active fw-bold text-primary" aria-current="page">Relatórios de Risco</li>
+        </ol>
+    </nav>
+
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-6">
+            <h3 class="text-dark mb-0 fw-bold d-flex align-items-center gap-2">
+                Relatórios de Risco
+            </h3>
+            <p class="text-muted mb-0 mt-1">
+                Monitoramento de frequência e documentação.
+            </p>
+        </div>
+        <div class="col-md-6">
+            <form method="get" action="{% url 'academico:relatorio_risco' %}" class="d-flex gap-2">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                        </svg>
+                    </span>
+                    {% comment %} Input invisível que avisa o backend de qual aba a busca foi disparada {% endcomment %}
+                    <input type="hidden" id="activeTabInput" name="tab" value="{{ active_tab }}">
+                    <input type="text" name="q" class="form-control border-start-0" 
+                           placeholder="Buscar..." 
+                           value="{{ termo_busca }}">
+                    <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+                </div>
+                {% if termo_busca %}
+                    <a href="{% url 'academico:relatorio_risco' %}?tab={{ active_tab }}" class="btn btn-outline-secondary">Limpar</a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <!-- NAV TABS -->
+    <ul class="nav nav-tabs mb-3" id="riskTabs" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link {% if active_tab == 'faltas' %}active{% endif %} text-dark fw-bold d-flex align-items-center gap-2" 
+                    id="faltas-tab" data-bs-toggle="tab" data-bs-target="#faltas" type="button" role="tab">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-x-fill" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m6.146-2.854a.5.5 0 0 1 .708 0L14 6.293l1.146-1.147a.5.5 0 0 1 .708.708L14.707 7l1.147 1.146a.5.5 0 0 1-.708.708L14 7.707l-1.146 1.147a.5.5 0 0 1-.708-.708L13.293 7l-1.147-1.146a.5.5 0 0 1 0-.708"/>
+                </svg>
+                Risco de Frequência
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link {% if active_tab == 'atestados' %}active{% endif %} text-dark fw-bold d-flex align-items-center gap-2" 
+                    id="atestados-tab" data-bs-toggle="tab" data-bs-target="#atestados" type="button" role="tab">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-medical" viewBox="0 0 16 16">
+                    <path d="M7.5 5.5a.5.5 0 0 0-1 0v.634l-.549-.317a.5.5 0 1 0-.5.866L6 7l-.549.317a.5.5 0 1 0 .5.866l.549-.317V8.5a.5.5 0 1 0 1 0v-.634l.549.317a.5.5 0 1 0 .5-.866L8 7l.549-.317a.5.5 0 1 0-.5-.866l-.549.317zm-2 4.5a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 2a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1z"/>
+                    <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/>
+                </svg>
+                Atestados Vencidos
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link {% if active_tab == 'pendentes-doc' %}active{% endif %} text-dark fw-bold d-flex align-items-center gap-2" 
+                    id="pendentes-doc-tab" data-bs-toggle="tab" data-bs-target="#pendentes-doc" type="button" role="tab" aria-controls="pendentes-doc" aria-selected="false">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-x" viewBox="0 0 16 16">
+                    <path d="M6.854 7.146a.5.5 0 1 0-.708.708L7.293 9l-1.147 1.146a.5.5 0 0 0 .708.708L8 9.707l1.146 1.147a.5.5 0 0 0 .708-.708L8.707 9l1.147-1.146a.5.5 0 0 0-.708-.708L8 8.293z"/>
+                    <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/>
+                </svg>
+                Doc. Pendente
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="riskTabsContent">
+
+        <!-- ====================== ABA FALTAS ====================== -->
+        <div class="tab-pane fade {% if active_tab == 'faltas' %}show active{% endif %}" id="faltas" role="tabpanel">
+            <div class="card border-danger shadow-sm">
+                <div class="card-header bg-danger text-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold fs-6 d-flex align-items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-ban" viewBox="0 0 16 16">
+                                <path d="M15 8a6.97 6.97 0 0 0-1.71-4.584l-9.874 9.875A7 7 0 0 0 15 8M2.71 12.584l9.874-9.875a7 7 0 0 0-9.874 9.874ZM16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0"/>
+                            </svg>
+                            Alunos com Excesso de Faltas
+                        </h5>
+                        <span class="badge bg-white text-danger rounded-pill">{{ page_obj.paginator.count }} Casos</span>
+                    </div>
+                </div>
+                
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped align-middle mb-0 text-center">
+                            <thead class="table-light text-secondary text-uppercase small fw-bold">
+                                <tr>
+                                    <th>Aluno</th>
+                                    <th>Turma / Modalidade</th>
+                                    <th>Faltas (Mês)</th>
+                                    <th class="text-end pe-4">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for aluno in page_obj %}
+                                <tr>
+                                    <td class="fw-bold text-dark">
+                                        {{ aluno.nome }} {{ aluno.sobrenome }}
+                                    </td>
+                                    {% for risco in aluno.turmas_risco %}
+                                        <td>
+                                            <div>
+                                                <span class="fw-bold text-secondary">{{ risco.modalidade }}</span>
+                                                <small class="text-muted ms-1">({{ risco.horario|time:"H:i" }})</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-danger rounded-pill ms-2" title="Total de Faltas">
+                                                {{ risco.faltas }}
+                                            </span>
+                                        </td>
+                                    {% endfor %}
+                                    <td class="text-end pe-3">
+                                        <div class="btn-group">
+                                            {% if perms.academico.view_chamada %}
+                                                {# --- BOTÃO 1: HISTÓRICO (Dropdown) --- #}
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" data-bs-boundary="window" data-bs-popper-config='{"strategy":"fixed"}'>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clock-history" viewBox="0 0 16 16">
+                                                            <path d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022zm2.004.45a7 7 0 0 0-.985-.299l.219-.976q.576.129 1.126.342zm1.37.71a7 7 0 0 0-.439-.27l.493-.87a8 8 0 0 1 .979.654l-.615.789a7 7 0 0 0-.418-.302zm1.834 1.79a7 7 0 0 0-.653-.796l.724-.69q.406.429.747.91zm.744 1.352a7 7 0 0 0-.214-.468l.893-.45a8 8 0 0 1 .45 1.088l-.95.313a7 7 0 0 0-.179-.483m.53 2.507a7 7 0 0 0-.1-1.025l.985-.17q.1.58.116 1.17zm-.131 1.538q.05-.254.081-.51l.993.123a8 8 0 0 1-.23 1.155l-.964-.267q.069-.247.12-.501m-.952 2.379q.276-.436.486-.908l.914.405q-.24.54-.555 1.038zm-.964 1.205q.183-.183.35-.378l.758.653a8 8 0 0 1-.401.432z"/>
+                                                            <path d="M8 1a7 7 0 1 0 4.95 11.95l.707.707A8.001 8.001 0 1 1 8 0z"/>
+                                                            <path d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5"/>
+                                                        </svg>
+                                                        Histórico
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end shadow">
+                                                        <li><h6 class="dropdown-header">Selecione a Turma:</h6></li>
+                                                        {% for risco in aluno.turmas_risco %}
+                                                            <li>
+                                                                <a class="dropdown-item d-flex justify-content-between align-items-center" title="Histórico de chamadas" 
+                                                                href="{% url 'academico:historico_chamadas_turma' risco.turma_id %}">
+                                                                    {{ risco.modalidade }}
+                                                                    <span class="badge bg-light text-dark border ms-2">{{ risco.faltas }} faltas</span>
+                                                                </a>
+                                                            </li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            {% endif %}
+                                            
+                                            {% if perms.pessoas.change_aluno %}
+                                                    {# --- BOTÃO 2: INATIVAR (Dropdown) --- #}
+                                                    <div class="btn-group ms-1">
+                                                        <button type="button" class="btn btn-sm btn-danger dropdown-toggle" title="Inativar aluno (cadastro)" data-bs-toggle="dropdown" data-bs-boundary="window" data-bs-popper-config='{"strategy":"fixed"}'>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-x-fill" viewBox="0 0 16 16">
+                                                                <path fill-rule="evenodd" d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m6.146-2.854a.5.5 0 0 1 .708 0L14 6.293l1.146-1.147a.5.5 0 0 1 .708.708L14.707 7l1.147 1.146a.5.5 0 0 1-.708.708L14 7.707l-1.146 1.147a.5.5 0 0 1-.708-.708L13.293 7l-1.147-1.146a.5.5 0 0 1 0-.708"/>
+                                                            </svg>
+                                                            Inativar
+                                                        </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end shadow border-danger">
+                                                            <li><h6 class="dropdown-header text-danger">Inativar de qual turma?</h6></li>
+                                                            {% for risco in aluno.turmas_risco %}
+                                                                <li>
+                                                                    <form action="{% url 'academico:inativar_matricula' risco.matricula_id %}" method="post" class="d-block">
+                                                                        {% csrf_token %}
+                                                                        <button type="submit" class="dropdown-item text-danger d-flex justify-content-between"
+                                                                                onclick="return confirm('Confirmar inativação de {{ aluno.nome }} no {{ risco.modalidade }}?');">
+                                                                            {{ risco.modalidade }}
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                                                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                                                                                <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                                                                            </svg>
+                                                                        </button>
+                                                                    </form>
+                                                                </li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    </div>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-5 text-muted bg-white">
+                                        <div class="d-flex flex-column align-items-center justify-content-center">
+                                            {% if termo_busca %}
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-search fs-1 text-secondary mb-3 opacity-50" viewBox="0 0 16 16">
+                                                   <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                                                </svg>
+                                                <h5 class="fw-bold text-secondary">Nenhum resultado encontrado</h5>
+                                                <p class="mb-0">Não encontramos alunos em risco para "<strong>{{ termo_busca }}</strong>".</p>
+                                            {% else %}
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check-circle-fill fs-1 text-success d-block mb-3" viewBox="0 0 16 16">
+                                                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                                                </svg>
+                                                <h5 class="text-success fw-bold">Tudo certo!</h5>
+                                                <p class="mb-0">Nenhum aluno excedeu o limite de faltas neste mês.</p>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- PAGINAÇÃO FALTAS -->
+                {% if page_obj_faltas.has_other_pages %} 
+                    <div class="mt-4">
+                        {% include 'components/paginacao.html' with page_obj=page_obj_faltas custom_page_range=custom_range_faltas page_param='page_faltas' tab_name='faltas' %}
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+
+        <!-- ====================== ABA ATESTADOS ====================== -->
+        <div class="tab-pane fade {% if active_tab == 'atestados' %}show active{% endif %}" id="atestados" role="tabpanel">
+            <div class="card border-warning shadow-sm">
+                <div class="card-header bg-warning text-dark py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold fs-6 d-flex align-items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-exclamation-circle-fill" viewBox="0 0 16 16">
+                                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4m.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/>
+                            </svg>
+                            Renovação de Atestado Necessária
+                        </h5>
+                        <span class="badge bg-dark text-warning rounded-pill">{{ page_obj_atestados.paginator.count }} Pendentes</span>
+                    </div>
+                </div>
+
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light text-secondary text-uppercase small fw-bold">
+                                <tr>
+                                    <th class="ps-5">Aluno</th>
+                                    <th>Data do Último Atestado</th>
+                                    <th class="ps-3">Status</th>
+                                    <th class="text-end pe-3">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for aluno in atestados_vencidos %}
+                                    <tr>
+                                        <td class="ps-3 fw-bold text-dark">
+                                            {{ aluno.primeiro_nome }} {{ aluno.ultimo_nome }}
+                                        </td>
+                                        <td class="ps-5">
+                                            {{ aluno.data_atestado_safe|date:"d/m/Y"|default:"Nunca entregou" }}
+                                        </td>
+                                        <td><span class="badge bg-danger">Vencido</span></td>
+                                        <td class="text-end pe-4">
+                                            {% if perms.academico.view_atestado %}
+                                            <a href="{% url 'academico:gerenciar_atestados' aluno.id %}" class="btn text-warning border-0 p-0 mb-1 ms-3" title="Gerenciar Atestados">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-file-earmark-medical" viewBox="0 0 16 16">                                                
+                                                    <path d="M7.5 5.5a.5.5 0 0 0-1 0v.634l-.549-.317a.5.5 0 1 0-.5.866L6 7l-.549.317a.5.5 0 1 0 .5.866l.549-.317V8.5a.5.5 0 1 0 1 0v-.634l.549.317a.5.5 0 1 0 .5-.866L8 7l.549-.317a.5.5 0 1 0-.5-.866l-.549.317zm-2 4.5a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 2a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1z"/>                                                 
+                                                    <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/>                                             
+                                                </svg>
+                                            </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center py-5 text-muted bg-white">
+                                            <div class="d-flex flex-column align-items-center justify-content-center">
+                                                {% if termo_busca %}
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search fs-1 text-secondary mb-3 opacity-50" viewBox="0 0 16 16">
+                                                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                                                    </svg>
+                                                    <h5 class="fw-bold text-secondary">Nenhum resultado encontrado</h5>
+                                                    <p class="mb-0">Não encontramos alunos com atestado vencido para "<strong>{{ termo_busca }}</strong>".</p>
+                                                {% else %}
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill fs-1 text-success d-block mb-3" viewBox="0 0 16 16">
+                                                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                                                </svg>
+                                                    <h5 class="text-success fw-bold">Documentação em dia!</h5>
+                                                    <p class="mb-0">Todos os alunos ativos possuem atestado válido.</p>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- PAGINAÇÃO ATESTADOS -->
+                {% if page_obj_atestados.has_other_pages %} 
+                    <div class="mt-4">
+                        {% include 'components/paginacao.html' with page_obj=page_obj_atestados custom_page_range=custom_range_atestados page_param='page_atestados' tab_name='atestados' %}
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+
+        <!-- ====================== ABA DOCUMENTAÇÕES PENDENTES ====================== -->
+        <div class="tab-pane fade {% if active_tab == 'pendentes-doc' %}show active{% endif %}" 
+            id="pendentes-doc" role="tabpanel" aria-labelledby="pendentes-doc-tab">
+            
+            <div class="card shadow-sm border-warning">
+                <div class="card-header bg-warning text-dark fw-bold d-flex align-items-center justify-content-between py-3">
+                    <h5 class="mb-0 fw-bold fs-6 d-flex align-items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
+                            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                        </svg>
+                        Alunos Matriculados sem Documentação Oficial
+                    </h5>
+                    <span class="badge bg-dark text-warning rounded-pill">{{ total_pendentes_doc }} Pendentes</span>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light text-secondary text-uppercase small fw-bold">
+                            <tr>
+                                <th class="ps-5">Aluno</th>
+                                <th>Responsável</th>
+                                <th class="ps-4">Telefone</th>
+                                <th class="text-end pe-3">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for aluno in alunos_pendentes_doc %}
+                                <tr>
+                                    <td class="ps-3 fw-bold text-dark">
+                                        {{ aluno.primeiro_nome }} {{ aluno.ultimo_nome }}
+                                    </td>
+                                    <td>
+                                        {% if aluno.primeiro_nome_responsavel %}
+                                            {{ aluno.primeiro_nome_responsavel }} {{ aluno.ultimo_nome_responsavel }}
+                                        {% else %}
+                                            <span class="text-muted small">Não informado</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if aluno.telefone %}
+                                            <a href="https://wa.me/55{{ aluno.telefone|cut:' '|cut:'-'|cut:'('|cut:')' }}" target="_blank" class="text-decoration-none text-success fw-bold">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-whatsapp" viewBox="0 0 16 16">
+                                                    <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232"/>
+                                                </svg>
+                                                {{ aluno.telefone }}
+                                            </a>
+                                        {% else %}
+                                            <span class="text-danger small">Sem contato</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <!-- O PULO DO GATO UX: Manda o 'next' na URL para o botão 'Voltar' devolver o usuário para este relatório! -->
+                                        <a href="{% url 'pessoas:editar_aluno' aluno.pk %}?next={{ request.get_full_path|urlencode }}" class="border-0 mb-1 ms-3" title="Regularizar">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                                <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                                                <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+                                            </svg>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill text-success fs-4 d-block mb-2" viewBox="0 0 16 16">
+                                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                                        </svg>
+                                        Nenhum aluno com documentação pendente no momento. Excelente trabalho da secretaria!
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- PAGINAÇÃO DOCUMENTOS PENDENTES -->
+                {% if page_obj_pendentes_doc.has_other_pages %} 
+                    <div class="mt-4">
+                        {% include 'components/paginacao.html' with page_obj=page_obj_pendentes_doc custom_page_range=custom_range_pendentes_doc page_param='page_pendentes_doc' tab_name='pendentes-doc' %}
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-end mb-3">
+            {% include 'components/botao_voltar.html' %}
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Pega o pino invisível do formulário
+        var tabInput = document.getElementById('activeTabInput');
+        
+        // Fica escutando as mudanças de abas do Bootstrap
+        var tabElements = document.querySelectorAll('button[data-bs-toggle="tab"]');
+        tabElements.forEach(function(tab) {
+            tab.addEventListener('shown.bs.tab', function (event) {
+                // event.target é a aba que acabou de acender na tela
+                if (event.target.id === 'faltas-tab') {
+                    tabInput.value = 'faltas';
+                } else if (event.target.id === 'atestados-tab') {
+                    tabInput.value = 'atestados';
+                }
+            });
+        });
+    });
+</script>
+{% endblock%}

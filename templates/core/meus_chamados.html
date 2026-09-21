@@ -1,0 +1,163 @@
+{% extends 'index.html' %}
+
+{% block title %}Meus Chamados - Suporte{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Meus Chamados de Suporte</h2>
+        <!-- Botão Voltar com SVG -->
+        <a href="{% url 'suporte' %}" class="btn btn-outline-secondary d-flex align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+            </svg>
+            Abrir Novo Chamado
+        </a>
+    </div>
+
+    {% if page_obj %}
+        <div class="row">
+            {% for ticket in page_obj %}
+                <div class="col-md-6 mb-4">
+                    <!-- LED de Borda: Roteamento de cores por Status (Máquina de Estados) -->
+                    <div class="card h-100 shadow-sm border-0 border-start border-4 transition-hover
+                        {% if ticket.status == 'ABERTO' %}border-primary
+                        {% elif ticket.status == 'ANALISE' %}border-warning
+                        {% elif ticket.status == 'RESOLVIDO' %}border-success
+                        {% elif ticket.status == 'DESCARTADO' %}border-secondary
+                        {% endif %}">
+                        
+                        <div class="card-header bg-transparent border-bottom-0 pt-4 pb-0 d-flex justify-content-between align-items-center">
+                            <span class="text-muted fw-semibold" style="font-size: 0.85rem;">Chamado #{{ ticket.id }}</span>
+                            
+                            <!-- Badges (Painéis Indicadores com estilo Soft UI) -->
+                            {% if ticket.status == 'ABERTO' %}
+                                <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary border border-primary d-flex align-items-center px-3 py-2">
+                                    <!-- SVG Exclamação -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                        <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+                                    </svg>
+                                    Aberto
+                                </span>
+                            {% elif ticket.status == 'ANALISE' %}
+                                <span class="badge rounded-pill bg-warning bg-opacity-10 text-dark border border-warning d-flex align-items-center px-3 py-2">
+                                    <!-- SVG Relógio -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+                                        <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+                                    </svg>
+                                    Em Análise
+                                </span>
+                            {% elif ticket.status == 'RESOLVIDO' %}
+                                <span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success d-flex align-items-center px-3 py-2">
+                                    <!-- SVG Check -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+                                      <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                                    </svg>
+                                    Resolvido
+                                </span>
+                            {% elif ticket.status == 'DESCARTADO' %}
+                                <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary border border-secondary d-flex align-items-center px-3 py-2">
+                                    <!-- SVG Cancelado (X) -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+                                      <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
+                                    </svg>
+                                    Descartado (Erro do Usuário)
+                                </span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="card-body flex-grow-1 pt-3">
+                            <h5 class="card-title text-dark fw-bold mb-2">{{ ticket.titulo }}</h5>
+                            
+                            <!-- Resumo truncado -->
+                            <p class="card-text text-secondary mb-3" style="font-size: 0.9rem;">
+                                {{ ticket.passo_a_passo|truncatechars:100 }}
+                            </p>
+
+                            <!-- Botão Relé (Mais leve e moderno) -->
+                            <button class="btn btn-sm btn-light border d-inline-flex align-items-center text-primary fw-semibold rounded-pill px-3" type="button" data-bs-toggle="collapse" data-bs-target="#detalhes-{{ ticket.id }}" aria-expanded="false" aria-controls="detalhes-{{ ticket.id }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M1.5 1.5A.5.5 0 0 0 1 2v4.8a2.5 2.5 0 0 0 2.5 2.5h9.793l-3.347 3.346a.5.5 0 0 0 .708.708l4.2-4.2a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 8.3H3.5A1.5 1.5 0 0 1 2 6.8V2a.5.5 0 0 0-.5-.5z"/>
+                                </svg>
+                                Ver mensagem completa
+                            </button>
+
+                            <!-- Payload completo oculto -->
+                            <div class="collapse mt-3" id="detalhes-{{ ticket.id }}">
+    
+                                <!-- Sinal de Entrada: O que o usuário enviou -->
+                                <div class="p-3 bg-white border rounded shadow-sm text-dark small position-relative mb-2">
+                                    <strong class="text-secondary">Sua Mensagem Original:</strong><br>
+                                    {{ ticket.passo_a_passo|linebreaksbr }}
+                                </div>
+
+                                <!-- Sinal de Retorno: A Resposta da Engenharia (Só acende se houver resposta) -->
+                                {% if ticket.resposta_tecnica %}
+                                    <div class="p-3 border rounded shadow-sm small position-relative bg-primary bg-opacity-10 border-primary">
+                                        <strong class="text-primary d-flex align-items-center mb-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+                                                <path d="M0 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2H2a2 2 0 0 1-2-2V2zm5 10v2a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-2v5a2 2 0 0 1-2 2H5zm6-8V2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4z"/>
+                                            </svg>
+                                            Resposta da Equipe Técnica:
+                                        </strong>
+                                        <div class="text-dark">
+                                            {{ ticket.resposta_tecnica|linebreaksbr }}
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                {% if ticket.anexo %}
+                                    <hr class="text-muted">
+                                    <strong class="text-secondary d-block mb-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="me-1" viewBox="0 0 16 16"><path d="M4.502 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/><path d="M14.002 13a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2V5A2 2 0 0 1 2 3a2 2 0 0 1 2-2h1.6a2 2 0 0 1 1.734 1h.52a2 2 0 0 0 1.734-1H12a2 2 0 0 1 2 2a2 2 0 0 1 2 2v8zM1.5 5a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .5.5h10a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.5-.5h-10z"/></svg>
+                                        Anexo Técnico:
+                                    </strong>
+                                    <!-- A tag 'target="_blank"' abre a imagem em outra aba para ver os detalhes em tela cheia -->
+                                    <a href="{{ ticket.anexo.url }}" target="_blank">
+                                        <img src="{{ ticket.anexo.url }}" alt="Print do Erro" class="img-fluid rounded border mt-1" style="max-height: 250px; object-fit: contain;">
+                                    </a>
+                                {% endif %}
+
+                            </div>
+                        </div>
+
+                        <!-- Rodapé com Timestamps -->
+                        <div class="card-footer bg-transparent border-top-0 pb-4 pt-0">
+                            <div class="d-flex flex-column text-muted" style="font-size: 0.8rem;">
+                                <span class="d-flex align-items-center mb-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="me-2" viewBox="0 0 16 16"><path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z"/><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/></svg>
+                                    <strong>Aberto:</strong>&nbsp;{{ ticket.criado_em|date:"d/m/Y H:i" }}
+                                </span>
+                                
+                                {% if ticket.resolvido_em and ticket.status == 'RESOLVIDO' %}
+                                    <span class="d-flex align-items-center text-success">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="me-2" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
+                                        <strong>Resolvido:</strong>&nbsp;{{ ticket.resolvido_em|date:"d/m/Y H:i" }}
+                                    </span>
+                                {% elif ticket.resolvido_em and ticket.status == 'DESCARTADO' %}
+                                     <span class="d-flex align-items-center text-secondary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="me-2" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/></svg>
+                                        <strong>Descartado:</strong>&nbsp;{{ ticket.resolvido_em|date:"d/m/Y H:i" }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% include 'components/paginacao.html' %}
+    {% else %}
+        <div class="text-center py-5">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="text-muted mb-3" viewBox="0 0 16 16">
+                <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464L7.443.184z"/>
+            </svg>
+            <h5 class="text-muted">Você não abriu nenhum chamado.</h5>
+            <p class="text-muted">Se encontrar algum problema, a nossa equipe técnica estará pronta para ajudar.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

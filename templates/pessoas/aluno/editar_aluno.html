@@ -1,0 +1,31 @@
+{% extends "index.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Editar Aluno{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+        <div class="mt-4 mb-4 p-4 border rounded shadow-sm bg-white ">
+            
+            {# Pega o nome do objeto Aluno que a UpdateView passa automaticamente #}
+            <h2>Editar Aluno: {{ object.primeiro_nome }} {{ object.ultimo_nome }}</h2>
+            <hr>
+
+            {# 'form' é a variável que a UpdateView passa para o template #}
+            <form method="post"> 
+                {% csrf_token %}
+                
+                {# Renderiza o AlunoForm usando o helper definido nele #}
+                {% crispy form form.helper %} 
+                
+                <div class="d-flex justify-content-end mt-4">
+                    {# Tenta voltar para a página anterior (ex: lista de alunos) #}
+                    {% include 'components/botao_voltar.html' %}
+                    <button type="submit" class="btn btn-success mt-3 ms-2">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

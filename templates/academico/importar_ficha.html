@@ -1,0 +1,84 @@
+{% extends "index.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Importar Ficha de Chamada{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    
+    {# --- BREADCRUMB --- #}
+    <nav aria-label="breadcrumb" class="bg-white p-3 rounded-3 shadow-sm border mb-4">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item">
+                <a href="{% url 'home' %}" class="text-decoration-none text-secondary d-flex align-items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house-door-fill" viewBox="0 0 16 16">
+                      <path d="M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5"/>
+                    </svg>
+                    Início
+                </a>
+            </li>
+            <li class="breadcrumb-item"><a href="{% url 'academico:listar_turmas' %}" class="text-decoration-none text-secondary">Turmas</a></li>
+            <li class="breadcrumb-item active fw-bold text-primary" aria-current="page">Importar Ficha de Chamada</li>
+        </ol>   
+    </nav>
+
+    {# --- CARD DE UPLOAD --- #}
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            
+            <div class="alert alert-light border-start border-4 border-info d-flex">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle-fill fs-4 me-3 text-info" viewBox="0 0 16 16">
+                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+                </svg>
+                <div>
+                    <h5 class="alert-heading fw-bold">Instruções da Ficha</h5>
+                    <p class="mb-0 text-muted">
+                        Carregue o arquivo Excel da Ficha de Chamada. O sistema irá:
+                        <ul class="mb-0 mt-1 small">
+                            <li>Ler o cabeçalho (Linhas 4 e 5) para identificar a <strong>Turma, Professor(a) e Estagiário(a)</strong>.</li>
+                            <li>Ler a lista de alunos (Linha 7 em diante) para <strong>Cadastrar e Matricular</strong>.</li>
+                            <li>Se a turma não existir, ela será criada automaticamente.</li>
+                        </ul>
+                    </p>
+                </div>
+            </div>
+            
+            <form method="post" enctype="multipart/form-data" class="mt-4">
+                {% csrf_token %}
+                
+                <div class="mb-4">
+                    <label for="arquivo_ficha" class="form-label fw-bold">Selecione o arquivo Excel (.xlsx)</label>
+                    <input type="file" class="form-control" id="arquivo_ficha" name="arquivo_ficha" accept=".xlsx, .xls" required>
+                    <div class="card mt-3 mb-3 border-warning">
+                        <div class="card-body bg-light">
+                            <div class="form-check form-switch form-control-md">
+                                <!-- PINO DE SINAL: bypass_atestado -->
+                                <input class="form-check-input" type="checkbox" role="switch" id="bypassAtestado" name="bypass_atestado">
+                                <label class="form-check-label fw-bold" for="bypassAtestado">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-shield-slash" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M1.093 3.093c-.465 4.275.885 7.46 2.513 9.589a11.8 11.8 0 0 0 2.517 2.453c.386.273.744.482 1.048.625.28.132.581.24.829.24s.548-.108.829-.24a7 7 0 0 0 1.048-.625 11.3 11.3 0 0 0 1.733-1.525l-.745-.745a10.3 10.3 0 0 1-1.578 1.392c-.346.244-.652.42-.893.533q-.18.085-.293.118a1 1 0 0 1-.101.025 1 1 0 0 1-.1-.025 2 2 0 0 1-.294-.118 6 6 0 0 1-.893-.533 10.7 10.7 0 0 1-2.287-2.233C3.053 10.228 1.879 7.594 2.06 4.06zM3.98 1.98l-.852-.852A59 59 0 0 1 5.072.559C6.157.266 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.483 3.626-.332 6.491-1.551 8.616l-.77-.77c1.042-1.915 1.72-4.469 1.29-7.702a.48.48 0 0 0-.33-.39c-.65-.213-1.75-.56-2.836-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524a50 50 0 0 0-1.357.39zm9.666 12.374-13-13 .708-.708 13 13z"/>
+                                    </svg>
+                                    Ativar a opção de não exigir atestado de aptidão
+                                </label>
+                                <div class="text-muted">
+                                    Se ativado, forçará esta turma a <strong>não exigir</strong> atestado, ignorando as colunas em branco relacionadas da planilha sem gerar erros.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end mt-3">
+                    <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-upload me-2" viewBox="0 0 16 16">
+                            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                            <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708z"/>
+                        </svg>
+                        Carregar e Visualizar Dados
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

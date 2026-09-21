@@ -1,0 +1,685 @@
+{% extends "index.html" %}
+{% load static %}
+
+{% block title %}Dashboard - Sistema GestorEdu{% endblock %}
+
+{% block extra_css %}
+<link href="{% static "css/relatorio.css" %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid px-4 pb-5">
+
+        <nav aria-label="breadcrumb"  style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);" class="bg-white p-3 rounded-3 shadow-sm border mb-4">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'home' %}" class="text-decoration-none text-secondary d-flex align-items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house-door-fill" viewBox="0 0 16 16">
+                            <path d="M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5"/>
+                        </svg>
+                        Início
+                    </a>
+                </li>
+                <li class="breadcrumb-item active fw-bold text-primary" aria-current="page">Relatório Gerencial</li>
+            </ol>
+        </nav>
+        
+        <!-- Cabeçalho -->
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <h2 class="mb-1">Relatório Gerencial</h2>
+                <p class="text-muted mb-0">Visão executiva, acompanhamento de equipe e saúde das turmas.</p>
+            </div>
+            <a href="{% url 'exportar_relatorio_excel' %}?{{ request.GET.urlencode }}" class="btn btn-outline-success shadow-sm disabled">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download me-2" viewBox="0 0 16 16">
+                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+                </svg>
+                Exportar Relatório
+            </a>
+        </div>
+
+        <!-- FILTROS GLOBAIS DE TEMPO -->
+        <div class="card border-0 shadow-sm mb-4 bg-light">
+            <div class="card-body py-3">
+                <form method="get" class="row g-3 align-items-end">
+                    <!-- Cabo de Memória: Mantém a aba atual ativa após o filtro -->
+                    <input type="hidden" name="tab" value="{{ active_dashboard_tab|default:'visao_geral' }}">
+                    
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Mês</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar3" viewBox="0 0 16 16">
+                                    <path d="M14 0H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M1 3.857C1 3.384 1.448 3 2 3h12c.552 0 1 .384 1 .857v10.286c0 .473-.448.857-1 .857H2c-.552 0-1-.384-1-.857z"/>
+                                    <path d="M6.5 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/>
+                                </svg>
+                            </span>
+                            <select name="mes" class="form-select border-start-0 ps-0">
+                                <!-- O PULO DO GATO: Opção "0" para Ano Inteiro -->
+                                <option value="0" {% if filtro_mes == 0 %}selected{% endif %}>Ano Inteiro (Todos)</option>
+                                
+                                {% for num_mes, nome_mes in lista_meses %}
+                                    <option value="{{ num_mes }}" {% if filtro_mes == num_mes %}selected{% endif %}>
+                                        {{ nome_mes }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Ano</label>
+                        <select name="ano" class="form-select shadow-sm">
+                            {% for ano in anos_disponiveis %}
+                                <option value="{{ ano }}" {% if filtro_ano == ano %}selected{% endif %}>
+                                    {{ ano }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- NOVO FILTRO: SEMANA -->
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Semana (Opcional)</label>
+                        <select name="semana" class="form-select shadow-sm">
+                            <option value="">Mês Inteiro (Todas)</option>
+                            <option value="1" {% if filtro_semana == '1' %}selected{% endif %}>1ª Semana</option>
+                            <option value="2" {% if filtro_semana == '2' %}selected{% endif %}>2ª Semana</option>
+                            <option value="3" {% if filtro_semana == '3' %}selected{% endif %}>3ª Semana</option>
+                            <option value="4" {% if filtro_semana == '4' %}selected{% endif %}>4ª Semana</option>
+                            <option value="5" {% if filtro_semana == '5' %}selected{% endif %}>5ª Semana</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary btn-sm w-100 mb-1 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-funnel-fill me-2" viewBox="0 0 16 16">
+                                <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5z"/>
+                            </svg>
+                            Filtrar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- MENU DE ABAS DE NAVEGAÇÃO -->
+        <ul class="nav nav-tabs mb-4" id="reportTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link {% if active_dashboard_tab == 'visao_geral' or not active_dashboard_tab %}active{% endif %} text-dark fw-bold" id="visao-tab" data-bs-toggle="tab" data-bs-target="#visao" type="button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pie-chart-fill me-2 text-primary" viewBox="0 0 16 16">
+                        <path d="M15.985 8.5H8.207l-5.5 5.5a8 8 0 0 0 13.277-5.5zM2 13.292A8 8 0 0 1 7.5.015v7.778zM8.5.015V7.5h7.485A8 8 0 0 0 8.5.015"/>
+                    </svg>
+                    Visão Executiva
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link {% if active_dashboard_tab == 'equipe' %}active{% endif %} text-dark fw-bold" id="equipe-tab" data-bs-toggle="tab" data-bs-target="#equipe" type="button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-workspace me-2 text-info" viewBox="0 0 16 16">
+                        <path d="M4 16s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-5.95a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
+                        <path d="M2 1a2 2 0 0 0-2 2v9.5A1.5 1.5 0 0 0 1.5 14h.653a5.4 5.4 0 0 1 1.066-2H1V3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v9h-2.219c.554.654.89 1.373 1.066 2h.653a1.5 1.5 0 0 0 1.5-1.5V3a2 2 0 0 0-2-2z"/>
+                    </svg>
+                    Desempenho da Equipe
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link {% if active_dashboard_tab == 'turmas' %}active{% endif %} text-dark fw-bold" id="turmas-tab" data-bs-toggle="tab" data-bs-target="#turmas" type="button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-mortarboard-fill me-2 text-success" viewBox="0 0 16 16">
+                        <path d="M8.211 2.047a.5.5 0 0 0-.422 0l-7.5 3.5a.5.5 0 0 0 .025.917l7.5 3a.5.5 0 0 0 .372 0L14 7.14V13a1 1 0 0 0-1 1v2h3v-2a1 1 0 0 0-1-1V6.739l.686-.275a.5.5 0 0 0 .025-.917z"/>
+                        <path d="M4.176 9.032a.5.5 0 0 0-.656.327l-.5 1.7a.5.5 0 0 0 .294.605l4.5 1.8a.5.5 0 0 0 .372 0l4.5-1.8a.5.5 0 0 0 .294-.605l-.5-1.7a.5.5 0 0 0-.656-.327L8 10.466z"/>
+                    </svg>
+                    Saúde das Turmas
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            
+            <!-- ========================================================= -->
+            <!-- ABA 1: VISÃO EXECUTIVA (Módulo 1)                         -->
+            <!-- ========================================================= -->
+            <div class="tab-pane fade {% if active_dashboard_tab == 'visao_geral' or not active_dashboard_tab %}show active{% endif %}" id="visao">
+                
+                <!-- Split View: Esporte vs Lazer -->
+                <div class="row g-4 mb-4">
+                    
+                    <!-- COLUNA ESPORTE -->
+                    <div class="col-lg-6">
+                        <div class="card border-primary h-100 shadow-sm border-top border-3">
+                            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0 fw-bold text-primary">Esporte</h5>
+                                <span class="badge bg-primary-subtle text-primary rounded-pill">Competitivo & Formação</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-6">
+                                        <div class="p-3 bg-light rounded text-center border">
+                                            <p class="text-muted small text-uppercase fw-bold mb-1">Alunos Ativos</p>
+                                            <h3 class="mb-0 text-primary">{{ kpis_executivos.esporte_ativos|default:"0" }}</h3>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="p-3 bg-light rounded text-center border">
+                                            <p class="text-muted small text-uppercase fw-bold mb-1">Novas Matrículas (Período)</p>
+                                            <h3 class="mb-0 text-success">+{{ kpis_executivos.esporte_matriculas|default:"0" }}</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-4" style="height: 200px;">
+                                    <canvas id="chartEsporte"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- COLUNA LAZER -->
+                    <div class="col-lg-6">
+                        <div class="card border-success h-100 shadow-sm border-top border-3">
+                            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0 fw-bold text-success">Lazer</h5>
+                                <span class="badge bg-success-subtle text-success rounded-pill">Recreação & Bem-estar</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-6">
+                                        <div class="p-3 bg-light rounded text-center border">
+                                            <p class="text-muted small text-uppercase fw-bold mb-1">Alunos Ativos</p>
+                                            <h3 class="mb-0 text-success">{{ kpis_executivos.lazer_ativos|default:"0" }}</h3>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="p-3 bg-light rounded text-center border">
+                                            <p class="text-muted small text-uppercase fw-bold mb-1">Novas Matrículas (Período)</p>
+                                            <h3 class="mb-0 text-success">+{{ kpis_executivos.lazer_matriculas|default:"0" }}</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-4" style="height: 200px;">
+                                    <canvas id="chartLazer"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Gráfico Comparativo Geral -->
+                <div class="card shadow-sm border">
+                    <div class="card-header bg-white py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0 fw-bold text-dark">Comparativo Geral</h6>
+                            <span class="badge bg-dark text-white rounded-pill">{{ kpis_executivos.total_ativos|default:"0" }} Total ativos</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div style="height: 300px;">
+                            <canvas id="chartComparativoGeral"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- ABA 2: DESEMPENHO DA EQUIPE (Aguardando Módulo 3)         -->
+            <!-- ========================================================= -->
+            <div class="tab-pane fade {% if active_dashboard_tab == 'equipe' %}show active{% endif %}" id="equipe">
+                
+                <div class="row g-4 mb-4">
+                    <!-- Coluna Esquerda (Gráfico Secretaria) -->
+                    <div class="col-lg-6">
+                        <div class="card shadow-sm border h-100">
+                            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0 fw-bold text-info">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-headset me-1" viewBox="0 0 16 16">
+                                        <path d="M8 1a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a6 6 0 1 1 12 0v6a2.5 2.5 0 0 1-2.5 2.5H9.366a1 1 0 0 1-.866.5h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 .866.5H11.5A1.5 1.5 0 0 0 13 12h-1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h1V6a5 5 0 0 0-5-5"/>
+                                    </svg>
+                                    Matrículas por Atendente (Secretaria)
+                                </h6>
+                                <span class="badge bg-info-subtle text-info border shadow-sm">Média: {{ media_matriculas_sec|default:"0" }}</span>
+                            </div>
+                            <div class="card-body">
+                                <div style="height: 300px;">
+                                    <canvas id="chartSecretaria"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Coluna Direita (Produtividade Professores) -->
+                    <div class="col-lg-6">
+                        <div class="card shadow-sm border h-100">
+                            <div class="card-header bg-white py-3">
+                                <h6 class="mb-0 fw-bold text-success">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-check-fill me-1" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                                        <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                                    </svg>
+                                    Frequências Lançadas (Professores)
+                                </h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive" style="max-height: 330px; overflow-y: auto;">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light sticky-top">
+                                            <tr>
+                                                <th class="ps-4">Professor</th>
+                                                <th class="text-center pe-4">Chamadas no Mês</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for prof in produtividade_prof %}
+                                            <tr>
+                                                <td class="ps-4 fw-semibold text-dark">{{ prof.nome_prof|default:"Professor Não Vinculado" }}</td>
+                                                <td class="text-center pe-4">
+                                                    <span class="badge bg-success rounded-pill px-3 py-2 shadow-sm">{{ prof.aulas_dadas }}</span>
+                                                </td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr><td colspan="2" class="text-center p-5 text-muted">Nenhum registro de chamada lançado neste período.</td></tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Segunda Linha: Auditoria de Polos (Mapeamento Horizontal) -->
+                <div class="card shadow-sm border" id="sessao-polos">
+                    <div class="card-header bg-white py-3">
+                        <h6 class="mb-0 fw-bold text-dark">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-geo-alt-fill me-1 text-danger" viewBox="0 0 16 16">
+                                <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
+                            </svg>
+                            Auditoria de Polos (Modalidades Ativas)
+                        </h6>
+                    </div>
+                    <div class="card-body bg-light">
+                        <div class="row g-3">
+                            <!-- Loop Dinâmico no Dicionário Python -->
+                            {% for item in auditoria_polos %}
+                            <div class="col-xl-3 col-md-4 col-sm-6">
+                                <div class="border rounded p-3 h-100 bg-white shadow-sm border-top border-3 border-danger">
+                                    <h6 class="fw-bold text-dark text-uppercase mb-3 border-bottom pb-2">
+                                        {{ item.nome|default:"Polo Indefinido" }}
+                                    </h6>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        {% for mod in item.modalidades %}
+                                            <span class="badge bg-secondary bg-opacity-10 text-dark border">{{ mod|default:"Desconhecida" }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="col-12 text-center py-5 text-muted">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-inbox fs-1 d-block mb-2" viewBox="0 0 16 16">
+                                    <path d="M4.98 4a.5.5 0 0 0-.39.188L1.54 8H6a.5.5 0 0 1 .5.5 1.5 1.5 0 1 0 3 0A.5.5 0 0 1 10 8h4.46l-3.05-3.812A.5.5 0 0 0 11.02 4zm9.954 5H10.45a2.5 2.5 0 0 1-4.9 0H1.066l.32 2.562a.5.5 0 0 0 .497.438h12.234a.5.5 0 0 0 .496-.438zM3.809 3.563A1.5 1.5 0 0 1 4.981 3h6.038a1.5 1.5 0 0 1 1.172.563l3.7 4.625a.5.5 0 0 1 .105.374l-.39 3.124A1.5 1.5 0 0 1 14.117 13H1.883a1.5 1.5 0 0 1-1.489-1.314l-.39-3.124a.5.5 0 0 1 .106-.374z"/>
+                                </svg>
+                                Nenhum polo possui turmas ativas no momento.
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    {% include 'components/paginacao.html' with page_obj=auditoria_polos page_param='page_polos' tab_name='equipe' custom_page_range=custom_range_polos %}
+                </div>
+
+            </div>
+            
+            <!-- ========================================================= -->
+            <!-- ABA 3: SAÚDE DAS TURMAS (Módulo 2)                        -->
+            <!-- ========================================================= -->
+            <div class="tab-pane fade {% if active_dashboard_tab == 'turmas' %}show active{% endif %}" id="turmas">
+                
+                <div class="row g-4 mb-4">
+                    <!-- Coluna Esquerda: Frequência das Turmas -->
+                    <div class="col-lg-8">
+                        <div class="card shadow-sm border h-100">
+                            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0 fw-bold text-primary">Frequência no Período Selecionado (Por Turma)</h6>
+                                <span class="badge bg-light text-muted border">Meta: 70%</span>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light sticky-top">
+                                            <tr>
+                                                <th class="ps-3">Turma (Modalidade - Polo)</th>
+                                                <th>Média Frequência</th>
+                                                <th class="pe-3">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for t in freq_por_turma %}
+                                            <tr>
+                                                <td class="ps-3">
+                                                    <span class="fw-bold">{{ t.modalidade }}</span><br>
+                                                    <small class="text-muted">{{ t.polo }}</small>
+                                                </td>
+                                                <td style="width: 30%;">
+                                                    <div class="d-flex align-items-center">
+                                                        <span class="me-2 fw-bold small">{{ t.percentual|floatformat:1 }}%</span>
+                                                        <div class="progress w-100" style="height: 6px;">
+                                                            <div class="progress-bar {% if t.percentual < 70 %}bg-danger{% elif t.percentual < 85 %}bg-warning{% else %}bg-success{% endif %}" 
+                                                                 style="width: {{ t.percentual|stringformat:'f' }}%"></div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="pe-3">
+                                                    {% if t.percentual < 70 %}
+                                                        <span class="badge bg-danger-subtle text-danger">Crítico</span>
+                                                    {% elif t.percentual < 85 %}
+                                                        <span class="badge bg-warning-subtle text-warning text-dark">Atenção</span>
+                                                    {% else %}
+                                                        <span class="badge bg-success-subtle text-success">Excelente</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr><td colspan="3" class="text-center p-4 text-muted">Nenhuma chamada registrada neste período.</td></tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Coluna Direita: Radar de Evasão -->
+                    <div class="col-lg-4">
+                        <div class="card border-danger h-100 shadow-sm border-top border-3">
+                            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0 fw-bold text-danger">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill me-1" viewBox="0 0 16 16">
+                                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                                    </svg>
+                                    Risco de Evasão (Top 10)
+                                </h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="list-group list-group-flush" style="max-height: 400px; overflow-y: auto;">
+                                    {% for aluno in alunos_em_risco %}
+                                    <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3">
+                                        <div>
+                                            <h6 class="mb-0 fw-bold">{{ aluno.nome_aluno}} {{ aluno.sobrenome_aluno }}</h6>
+                                            <small class="text-muted">{{ aluno.modalidade }}</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-danger rounded-pill fs-6">{{ aluno.percentual|floatformat:0 }}%</span>
+                                            <div class="small text-muted" style="font-size: 0.65rem;">Frequência</div>
+                                        </div>
+                                    </div>
+                                    {% empty %}
+                                    <div class="p-4 text-center text-success">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle fs-2 d-block mb-2" viewBox="0 0 16 16">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                            <path d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05"/>
+                                        </svg>
+                                        Nenhum aluno em estado crítico!
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráfico de Linha (Evolução Temporal) -->
+                <div class="card shadow-sm border">
+                    <div class="card-header bg-white py-3">
+                        <h6 class="mb-0 fw-bold text-dark">Evolução de Frequência por Modalidade ({{ filtro_ano }})</h6>
+                    </div>
+                    <div class="card-body">
+                        <div style="height: 350px;">
+                            <canvas id="chartEvolucao"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div> <!-- Fim Tab Content -->
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        // =========================================================
+        // SCRIPTS DA ABA EQUIPE (Original Preservado)
+        // =========================================================
+
+        // SINCRONIZADOR DE ABAS E URL (Blinda a paginação e o botão Voltar)
+        const tabElements = document.querySelectorAll('button[data-bs-toggle="tab"]');
+        const hiddenTabInput = document.querySelector('input[name="tab"]');
+        
+        tabElements.forEach(tab => {
+            tab.addEventListener('shown.bs.tab', function (event) {
+                // 1. Pega o ID da aba clicada
+                let targetId = event.target.getAttribute('data-bs-target').replace('#', '');
+                
+                // Mapeamento especial para a aba de visão geral
+                if (targetId === 'visao') targetId = 'visao_geral';
+                
+                // 2. Atualiza o input escondido do formulário de filtros
+                if (hiddenTabInput) hiddenTabInput.value = targetId;
+                
+                // 3. O PULO DO GATO: Atualiza a URL do navegador na mesma hora
+                const url = new URL(window.location);
+                url.searchParams.set('tab', targetId);
+                window.history.replaceState({}, '', url);
+            });
+        });
+
+        // Lemos o que está escrito na URL lá em cima
+        const params = new URLSearchParams(window.location.search);
+                
+        // O usuário clicou na paginação de Polos?
+        if (params.has('page_polos')) {
+                    
+            // Atraso estratégico: Esperamos 300ms para o Bootstrap "desenhar" a aba na tela
+            setTimeout(function() {
+                const sessaoPolos = document.getElementById('sessao-polos');
+                        
+                if (sessaoPolos) {
+                    // Desliza a câmera suavemente, deixando o painel bem no meio da tela
+                    sessaoPolos.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' 
+                    });
+                }
+            }, 300);
+        }
+
+        const inputBusca = document.getElementById('input-busca-funcionarios');
+        if(inputBusca) {
+            inputBusca.addEventListener('keyup', function() {
+                const termo = this.value.toLowerCase();
+                const linhas = document.querySelectorAll('#tbody-funcionarios tr');
+                linhas.forEach(linha => {
+                    const textoLinha = linha.textContent.toLowerCase();
+                    linha.style.display = textoLinha.includes(termo) ? '' : 'none';
+                });
+            });
+        }
+
+        // Gráfico Original de Equipe
+        const labelsEquipe = {{ chart_equipe_labels|safe|default:"[]" }};
+        const dataEquipe = {{ chart_equipe_data|safe|default:"[]" }};
+        if(labelsEquipe.length > 0) {
+            new Chart(document.getElementById('chartAtendimentos'), {
+                type: 'bar',
+                data: {
+                    labels: labelsEquipe,
+                    datasets: [{
+                        label: 'Atendimentos',
+                        data: dataEquipe,
+                        backgroundColor: '#0d6efd',
+                        borderRadius: 4,
+                        barPercentage: 0.7
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { grid: { display: false } }, y: { grid: { display: false } } }
+                }
+            });
+        }
+
+        // =========================================================
+        // MÓDULO 1: GRÁFICOS DE VISÃO EXECUTIVA (Placeholder)
+        // =========================================================
+        // Estes gráficos de donut serão alimentados no futuro quando o backend enviar os arrays específicos.
+        // Crio as instâncias vazias/zeradas agora apenas para as tags <canvas> não quebrarem a tela.
+        
+        const esporteCtx = document.getElementById('chartEsporte');
+        if(esporteCtx) {
+            new Chart(esporteCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Ativos', 'Inativos'],
+                    datasets: [{ data: [{{ kpis_executivos.esporte_ativos|default:0 }}, 0], backgroundColor: ['#0d6efd', '#e9ecef'], borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { display: false } } }
+            });
+        }
+
+        const lazerCtx = document.getElementById('chartLazer');
+        if(lazerCtx) {
+            new Chart(lazerCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Ativos', 'Inativos'],
+                    datasets: [{ data: [{{ kpis_executivos.lazer_ativos|default:0 }}, 0], backgroundColor: ['#198754', '#e9ecef'], borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { display: false } } }
+            });
+        }
+
+        const compGeralCtx = document.getElementById('chartComparativoGeral');
+        if(compGeralCtx) {
+            new Chart(compGeralCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Esporte', 'Lazer'],
+                    datasets: [{
+                        label: 'Matrículas',
+                        data: [{{ kpis_executivos.esporte_matriculas|default:0 }}, {{ kpis_executivos.lazer_matriculas|default:0 }}],
+                        backgroundColor: ['#0d6efd', '#198754'],
+                        borderRadius: 4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+
+        // =========================================================
+        // MÓDULO 2: GRÁFICO DE EVOLUÇÃO (LINHAS MULTIPLAS)
+        // =========================================================
+        const dadosEvolucaoBrutos = {{ evolucao_modalidades_json|safe|default:"[]" }};
+        const evolucaoCtx = document.getElementById('chartEvolucao');
+        
+        if (evolucaoCtx && dadosEvolucaoBrutos.length > 0) {
+            const mesesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+            const modalidadesUnicas = [...new Set(dadosEvolucaoBrutos.map(item => item.modalidade))];
+            const cores = ['#0d6efd', '#198754', '#dc3545', '#ffc107', '#6f42c1', '#0dcaf0', '#fd7e14'];
+
+            const datasetsEvolucao = modalidadesUnicas.map((modalidade, index) => {
+                const dadosMensais = new Array(12).fill(null);
+                dadosEvolucaoBrutos.forEach(item => {
+                    if (item.modalidade === modalidade) {
+                        // Trata o string "YYYY-MM-DD" e extrai apenas o mês (baseado em índice zero para o array JS)
+                        // A data que vem do TruncMonth no Django tem o formato "2026-07-01T00:00:00Z"
+                        const dataObj = new Date(item.mes);
+                        const mesIndex = dataObj.getUTCMonth(); 
+                        dadosMensais[mesIndex] = parseFloat(item.percentual).toFixed(1);
+                    }
+                });
+
+                return {
+                    label: modalidade,
+                    data: dadosMensais,
+                    borderColor: cores[index % cores.length],
+                    backgroundColor: cores[index % cores.length],
+                    tension: 0.3,
+                    borderWidth: 2,
+                    pointRadius: 3
+                };
+            });
+
+            new Chart(evolucaoCtx, {
+                type: 'line',
+                data: {
+                    labels: mesesNomes,
+                    datasets: datasetsEvolucao
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y + '%';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) { return value + "%" }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // =========================================================
+        // MÓDULO 3: GRÁFICO DA SECRETARIA (Ranking de Matrículas)
+        // =========================================================
+        const dadosSecretariaRaw = {{ matriculas_secretaria_json|safe|default:"[]" }};
+            
+        if (dadosSecretariaRaw.length > 0) {
+            // Se o campo vier nulo, consideramos que a matrícula foi feita online/sistema
+            const labelsSec = dadosSecretariaRaw.map(item => item.atendente || 'Sistema / Autoatendimento');
+            const dataSec = dadosSecretariaRaw.map(item => item.total);
+                
+            new Chart(document.getElementById('chartSecretaria'), {
+                type: 'bar',
+                data: {
+                    labels: labelsSec,
+                    datasets: [{
+                        label: 'Matrículas Feitas',
+                        data: dataSec,
+                        backgroundColor: '#0dcaf0',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', // Inverte os eixos: vira um gráfico de barras horizontais (melhor para nomes de pessoas)
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { 
+                        x: { beginAtZero: true, ticks: { precision: 0 } }, // 'precision: 0' impede o gráfico de mostrar 1.5 pessoas
+                        y: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

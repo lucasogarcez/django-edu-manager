@@ -1,0 +1,40 @@
+{% extends "index.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Entrar{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-5 col-md-7">
+        <div class="mt-5 mb-4 p-4 border rounded shadow-sm bg-white">
+            
+            <h2 class="text-center">Bem-vindo de volta!</h2>
+            <hr>
+
+            {% if form.errors %}
+                <div class="alert alert-danger" role="alert">
+                    Seu nome de usuário ou senha está incorreto. Tente novamente.
+                </div>
+            {% endif %}
+
+            <form method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+                
+                {# O Django passa o formulário de login automaticamente como 'form' #}
+                {{ form|crispy }}
+                
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary">Entrar</button>
+                </div>
+            </form>
+
+            <div class="mt-3 text-center">
+                <small>
+                    <a href="{% url 'password_reset' %}" class="text-muted">Esqueceu sua senha?</a>
+                </small>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

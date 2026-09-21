@@ -1,0 +1,141 @@
+{% extends "index.html" %}
+
+{% block title %}Início - Sistema GestorEdu{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    
+    <div class="p-5 mb-4 bg-light rounded-3 shadow-sm">
+        <div class="container-fluid py-3">
+
+            {% if user.is_authenticated %}
+                <h1 class="display-5 fw-bold">Olá, {{ user.first_name|default:user.username }}!</h1>
+                <p class="col-md-8 fs-4">Bem-vindo ao Sistema de Gestão Acadêmica.</p>
+                
+                <p>Você está logado como: 
+                    <strong>
+                        {% if request.user.is_superuser %}
+                            <span class="badge bg-danger">Administrador do Sistema</span>
+                        {% elif request.user.groups.all %}
+                            <span class="badge bg-primary">{{ request.user.groups.all.0.name }}</span>
+                        {% endif %}
+                    </strong>
+                </p>
+            {% else %}
+                {# VISITANTE (NÃO LOGADO) #}
+                <h1 class="display-5 fw-bold">Olá, Visitante!</h1>
+                <p class="col-md-8 fs-4">Bem-vindo ao Sistema de Gestão Acadêmica.</p>
+                <p>Para acessar suas turmas ou gerenciar alunos, é necessário entrar no sistema.</p>
+                <a href="{% url 'login' %}" class="btn btn-primary btn-lg mt-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-in-right" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0z"/>
+                        <path fill-rule="evenodd" d="M11.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H1.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
+                    </svg> 
+                    Entrar
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if user.is_authenticated %}
+        <div class="row align-items-stretch justify-content-center">
+            
+            {# --- CARTÕES PARA PROFESSORES --- #}
+            {% if not user.is_staff %}
+                <div class="col-md-5 mb-4">
+                    <div class="card h-100 border-primary shadow-sm">
+                        <div class="card-header bg-primary text-white d-flex align-items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-journal-check" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M10.854 6.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 8.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                                <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2"/>
+                                <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1z"/>
+                            </svg> 
+                            Minhas Aulas
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">Gerenciar Turmas</h5>
+                            <p class="card-text">Acesse suas turmas, visualize alunos matriculados e realize as chamadas diárias.</p>
+                            <a href="{% url 'academico:minhas_turmas' %}" class="btn btn-primary stretched-link d-grid gap-2">Ir para Minhas Turmas</a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            {# --- CARTÕES PARA DIRETORIA/SECRETARIA --- #}
+            {% if user.is_staff %}
+                {% if perms.pessoas.view_aluno %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 border-success">
+                            <div class="card-header bg-success text-white d-flex align-items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-people-fill" viewBox="0 0 16 16">
+                                    <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.24 2.24 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.3 6.3 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
+                                </svg>
+                                Alunos
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">Gestão de Alunos</h5>
+                                <p class="card-text">Cadastre novos alunos, edite informações, gerencie atestados e matrículas.</p>
+                                <div class="d-grid gap-2">
+                                    <a href="{% url 'pessoas:listar_alunos' %}" class="btn btn-success">Ver Todos os Alunos</a>
+                                    <a href="{% url 'pessoas:cadastro_geral_aluno' %}" class="btn btn-outline-success">Novo Aluno</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                {% if perms.academico.view_turma %}
+                    <div class="col-md-4 mb-5 d-flex flex-column">
+                        <div class="card h-100 border-info">
+                            <div class="card-header bg-info text-dark d-flex align-items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar-week-fill" viewBox="0 0 16 16">
+                                    <path d="M4 .5a.5.5 0 0 0-1 0V1H2a2 2 0 0 0-2 2v1h16V3a2 2 0 0 0-2-2h-1V.5a.5.5 0 0 0-1 0V1H4zM16 14V5H0v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2M9.5 7h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5m3 0h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5M2 10.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5"/>
+                                </svg>
+                                Turmas
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">Gestão Acadêmica</h5>
+                                <p class="card-text">Visualize todas as turmas, acompanhe chamadas e veja históricos de presença.</p>
+                                <div class="d-grid gap-2">
+                                    <a href="{% url 'academico:listar_turmas' %}" class="btn btn-info text-dark">Ver Todas as Turmas</a>
+                                </div>
+                            </div>
+                        </div>
+                    
+                    
+                        <div class="mt-auto pt-3">
+                            <a href="{% url 'academico:relatorio_risco' %}" class="btn btn-danger text-white w-100  ">
+                                Resolver Pendências
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                {% if perms.academico.view_fechamentomensal %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 border-warning">
+                            <div class="card-header bg-warning text-dark d-flex align-items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear-fill" viewBox="0 0 16 16">
+                                    <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
+                                </svg>
+                                Admin
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">Configurações do Sistema</h5>
+                                <p class="card-text">Acesso avançado para criar usuários, polos e modalidades.</p>
+                                <div class="d-grid gap-2">
+                                    <a href="{% url 'admin:index' %}" class="btn btn-warning text-dark">Painel Administrativo</a>
+                                    <a href="{% url 'relatorios_gerenciais' %}" class="btn btn-outline-warning">Relatório Gerencial</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

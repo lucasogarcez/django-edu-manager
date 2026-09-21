@@ -1,0 +1,295 @@
+{% extends "index.html" %}
+
+{% block title %}Lista de Alunos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <nav aria-label="breadcrumb"  style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);" class="bg-white p-3 rounded-3 shadow-sm border mb-4">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item">
+                <a href="{% url 'home' %}" class="text-decoration-none text-secondary d-flex align-items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house-door-fill" viewBox="0 0 16 16">
+                        <path d="M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5"/>
+                    </svg>
+                    Início
+                </a>
+            </li>
+            <li class="breadcrumb-item active fw-bold text-primary" aria-current="page">Gerenciar Alunos</li>
+        </ol>
+    </nav>
+
+    {# --- ALERTA DE IMPORTAÇÃO RECENTE --- #}
+    {% if ids_novos_alunos or resumo_importacao %}
+    <div class="alert alert-success shadow-sm d-flex align-items-center justify-content-between mb-4 border-start border-success border-2" role="alert">
+        <div>
+            <h5 class="alert-heading fw-bold mb-1">Importação Recente</h5>
+            <p class="mb-0 small">
+                Foram criados <strong>{{ ids_novos_alunos|length }}</strong> novos alunos e 
+                <strong>{{ resumo_importacao.matriculas|length }}</strong> matrículas.
+                <br>Se houver erro, você pode desfazer agora.
+            </p>
+        </div>
+        
+        <form action="{% url 'academico:desfazer_importacao' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger fw-bold" onclick="return confirm('ATENÇÃO: Isso apagará os aluno, turmas e matrículas criados agora.\n\nDeseja continuar?');">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise me-1" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2z"/>
+                    <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466"/>
+                </svg>
+                    Desfazer Importação
+            </button>
+        </form>
+    </div>
+    {% endif %}
+
+    <h2>Gerenciar Alunos</h2>
+
+    <div class="row mb-3 align-items-center">
+        <div class="col-md-7 col-lg-6">
+            <ul class="nav nav-pills mb-3">
+                <li class="nav-item">
+                    <a class="nav-link {% if status_filtro_atual == 'ativos' %}active{% endif %}" 
+                    href="?status=ativos&{{ query_busca }}">
+                    Alunos Ativos
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if status_filtro_atual == 'inativos' %}active{% endif %}" 
+                    href="?status=inativos&{{ query_busca }}">
+                    Alunos Inativos
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if status_filtro_atual == 'todos' %}active{% endif %}" 
+                    href="?status=todos&{{ query_busca }}">
+                    Ver Todos
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="col-md-5 col-lg-6 mb-3">
+            <div class="d-flex justify-content-end gap-2">
+                {% if perms.pessoas.add_aluno %}
+                    <a href="{% url 'academico:importar_ficha_chamada' %}" class="btn btn-outline-primary d-flex align-items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-upload" viewBox="0 0 16 16">
+                            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                            <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708z"/>
+                        </svg>
+                        Importar Fichas de Chamada
+                    </a>
+                    <a href="{% url 'pessoas:cadastro_geral_aluno' %}" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg mb-1" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
+                        </svg> Novo Aluno
+                    </a>
+                {% endif %}
+                {% if perms.pessoas.change_aluno %}
+                    <a href="{% url 'pessoas:painel_merge_alunos' %}" class="btn btn-outline-warning">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tools" viewBox="0 0 16 16">
+                            <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3q0-.405-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z"/>
+                        </svg>
+                        Resolver Duplicidades
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mb-3">
+        <div class="col-md-7 col-lg-6">
+                <form method="get" class="mb-0">
+
+                    <input type="hidden" name="status" value="{{ status_filtro_atual }}">
+                    
+                    <div class="input-group mb-0">
+                        <input type="text" name="q" class="form-control" placeholder="Buscar por nome, telefone, e-mail ou CPF..." value="{{ termo_busca|default:'' }}">
+                        <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+                        {% if termo_busca %}
+                            <a href="?status={{ status_filtro_atual }}" class="btn btn-outline-secondary">Limpar</a>
+                        {% endif %}
+                    </div>
+                </form>
+        </div>
+    </div>
+
+    {% if alunos %}
+        <table class="table table-striped table-hover align-middle text-center">
+            <thead>
+                <tr>
+                    <th>Nome Completo</th>
+                    <th>Data Nasc.</th>
+                    <th>Documento</th>
+                    <th>Telefone</th>
+                    <th>E-mail</th>
+                    <th>Atestado</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for aluno in alunos %}
+                <tr class="{% if aluno.id in ids_novos_alunos %}table-success border-start border-success border-2{% endif %}">
+                    <td>
+                        {{ aluno.primeiro_nome }} {{ aluno.ultimo_nome }}
+                        {# Badge "NOVO" #}
+                        {% if aluno.id in ids_novos_alunos %}
+                            <span class="badge bg-success ms-2 small">NOVO</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ aluno.data_nascimento|date:"d/m/Y"|default:"-" }}</td> {# Formata a data #}
+                    <td>
+                        {% if aluno.cpf %}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-vcard text-muted me-1" title="CPF" viewBox="0 0 16 16">
+                                <path d="M5 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4m4-2.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5M9 8a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4A.5.5 0 0 1 9 8m1 2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5"/>
+                                <path d="M2 2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zM1 4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H8.96q.04-.245.04-.5C9 10.567 7.21 9 5 9c-2.086 0-3.8 1.398-3.984 3.181A1 1 0 0 1 1 12z"/>
+                            </svg>
+                        {% elif aluno.rg %}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-heading text-muted me-1" title="RG" viewBox="0 0 16 16">
+                                <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2z"/>
+                                <path d="M3 8.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5m0-5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5z"/>
+                            </svg>
+                        {% elif aluno.tipo_documento == 'CERTIDAO_NASCIMENTO' %}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-postcard" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M2 2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zM1 4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm7.5.5a.5.5 0 0 0-1 0v7a.5.5 0 0 0 1 0zM2 5.5a.5.5 0 0 1 .5-.5H6a.5.5 0 0 1 0 1H2.5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5H6a.5.5 0 0 1 0 1H2.5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5H6a.5.5 0 0 1 0 1H2.5a.5.5 0 0 1-.5-.5M10.5 5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5zM13 8h-2V6h2z"/>
+                            </svg>
+                        {% endif %}
+                        {% if aluno.documento_exibicao == 'Pendente' %}  
+                            <span class="text-warning">Pendente</span>  
+                        {% else %}
+                            {{ aluno.documento_exibicao }}
+                        {% endif %}
+                    </td>
+                    <td>{{ aluno.telefone_formatado|default:"-" }}</td>
+                    <td>{{ aluno.email|default:"-" }}</td>
+                    <td class="text-center">
+                        {% with status=aluno.status_atestado_formatado %}
+    
+                            {% if status == 'valido' %}
+                                <span class="text-success" title="Atestado Válido">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                                    </svg>
+                                </span>
+
+                            {% elif status == 'aviso' %}
+                                <span class="text-warning" title="Vence em menos de 30 dias">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-exclamation-circle-fill" viewBox="0 0 16 16">
+                                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4m.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/>
+                                    </svg>
+                                </span>
+
+                            {% elif status == 'vencido' %}
+                                <span class="text-danger" title="Atestado VENCIDO">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
+                                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
+                                    </svg>
+                                </span>
+
+                            {% else %}
+                                <span class="text-secondary opacity-50" title="Questionário não preenchido ou sem data">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-dash-circle" viewBox="0 0 16 16">
+                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"/>
+                                    </svg>
+                                </span>
+                            {% endif %}
+
+                        {% endwith %}
+                    </td>
+                    <td>
+                        {% if aluno.ativo %} {# Ou aluno.usuario.is_active #}
+                            <span class="badge bg-success">Ativo</span>
+                        {% else %}
+                            <span class="badge bg-danger">Inativo</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% comment %} --- BOTÃO EDITAR ALUNO --- {% endcomment %}
+                        <div class="d-flex gap-1 justify-content-center ">
+                            {% if perms.pessoas.change_aluno %}
+                                <a href="{% url 'pessoas:editar_aluno' aluno.id %}" title="Editar Aluno">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                                        <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+                                    </svg>
+                                </a>
+                            {% endif %}
+
+                            {% comment %} --- BOTÃO ATESTADO DO ALUNO --- {% endcomment %}
+                            {% if perms.academico.view_atestado %}
+                                <a href="{% url 'academico:gerenciar_atestados' aluno.id %}" class="btn text-warning border-0 p-0 mb-1 ms-3" title="Gerenciar Atestados">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-file-earmark-medical" viewBox="0 0 16 16">
+                                        <path d="M7.5 5.5a.5.5 0 0 0-1 0v.634l-.549-.317a.5.5 0 1 0-.5.866L6 7l-.549.317a.5.5 0 1 0 .5.866l.549-.317V8.5a.5.5 0 1 0 1 0v-.634l.549.317a.5.5 0 1 0 .5-.866L8 7l.549-.317a.5.5 0 1 0-.5-.866l-.549.317zm-2 4.5a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 2a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1z"/>
+                                        <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/>
+                                    </svg>
+                                </a>
+                            {% endif %}
+
+                            {% comment %} --- BOTÃO DE MATRÍCULA (Aluno) --- {% endcomment %}
+                            {% if perms.academico.add_matricula %}
+                                <a href="{% url 'pessoas:matricular_aluno' aluno.id %}" class="btn text-success border-0 p-0 mb-1 ms-3" title="Matricular em Nova Turma">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                                    </svg>
+                                </a>
+                            {% endif %}
+
+                            {% comment %} --- BOTÃO QUESTIONÁRIO DE SAÚDE DO ALUNO --- {% endcomment %}
+                            {% if perms.pessoas.change_aluno %}
+                                <a href="{% url 'saude:editar_questionario_saude' aluno.id %}" class="btn text-info border-0 p-0 mb-1 ms-3" title="Editar Questionário de Saúde">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-clipboard2-pulse" viewBox="0 0 16 16">
+                                        <path d="M9.5 0a.5.5 0 0 1 .5.5.5.5 0 0 0 .5.5.5.5 0 0 1 .5.5V2a.5.5 0 0 1-.5.5h-5A.5.5 0 0 1 5 2v-.5a.5.5 0 0 1 .5-.5.5.5 0 0 0 .5-.5.5.5 0 0 1 .5-.5z"/>
+                                        <path d="M3 2.5a.5.5 0 0 1 .5-.5H4a.5.5 0 0 0 0-1h-.5A1.5 1.5 0 0 0 2 2.5v12A1.5 1.5 0 0 0 3.5 16h9a1.5 1.5 0 0 0 1.5-1.5v-12A1.5 1.5 0 0 0 12.5 1H12a.5.5 0 0 0 0 1h.5a.5.5 0 0 1 .5.5v12a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5z"/>
+                                        <path d="M9.979 5.356a.5.5 0 0 0-.968.04L7.92 10.49l-.94-3.135a.5.5 0 0 0-.926-.08L4.69 10H4.5a.5.5 0 0 0 0 1h.5a.5.5 0 0 0 .447-.276l.936-1.873 1.138 3.793a.5.5 0 0 0 .968-.04L9.58 7.51l.94 3.135A.5.5 0 0 0 11.447 11h.5a.5.5 0 0 0 0-1h-.5l-.908-1.815z"/>
+                                    </svg>
+                                </a>
+                            {% endif %}
+
+                            {% comment %} --- BOTÃO INATIVAR ALUNO (Sistema) --- {% endcomment %}
+                            {% if perms.pessoas.change_aluno %} {# Ou uma permissão específica 'inativar_aluno' #}
+                                {% if aluno.ativo %}
+                                    <form action="{% url 'pessoas:inativar_aluno' aluno.id %}" method="post" 
+                                          onsubmit="return confirm('Tem certeza que deseja INATIVAR este aluno do sistema? Ele será removido das chamadas futuras.');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-link text-danger border-0 p-0 mb-1 ms-3" title="Inativar Aluno no Sistema">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-slash" viewBox="0 0 16 16">
+                                                <path d="M13.879 10.414a2.501 2.501 0 0 0-3.465 3.465zm.707.707-3.465 3.465a2.501 2.501 0 0 0 3.465-3.465m-4.56-1.096a3.5 3.5 0 1 1 4.949 4.95 3.5 3.5 0 0 1-4.95-4.95ZM11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0M8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m.256 7a4.5 4.5 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10q.39 0 .74.025c.226-.341.496-.65.804-.918Q8.844 9.002 8 9c-5 0-6 3-6 4s1 1 1 1z"/>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    {% comment %} Botão para REATIVAR se necessário {% endcomment %}
+                                    <form action="{% url 'pessoas:ativar_aluno' aluno.id %}" method="post" onsubmit="return confirm('Tem certeza que deseja REATIVAR este aluno no sistema?');" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn text-success border-0 p-0 mb-1 ms-3" title="Reativar Aluno no Sistema">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check" viewBox="0 0 16 16">
+                                                <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m1.679-4.493-1.335 2.226a.75.75 0 0 1-1.174.144l-.774-.773a.5.5 0 0 1 .708-.708l.547.548 1.17-1.951a.5.5 0 1 1 .858.514M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0M8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4"/>
+                                                <path d="M8.256 14a4.5 4.5 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10q.39 0 .74.025c.226-.341.496-.65.804-.918Q8.844 9.002 8 9c-5 0-6 3-6 4s1 1 1 1z"/>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% comment %} Paginação {% endcomment %}
+        {% include 'components/paginacao.html' %}
+
+    {% else %}
+        <p>Nenhum aluno encontrado{% if termo_busca %} com o termo "{{ termo_busca }}"{% endif %}{% if status_filtro_atual != 'todos' %} no filtro "{{ status_filtro_atual|title }}"{% endif %}.</p>
+    {% endif %}
+
+    <div class="d-flex justify-content-end mb-3">
+        {% include 'components/botao_voltar.html' %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema em Manutenção</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            /* Fundo cinza ultraclaro industrial para destacar o painel branco */
+            background-color: #f4f6f9; 
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2b3035;
+            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+            margin: 0;
+            overflow: hidden;
+        }
+        .clean-panel {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            /* Sombra difusa e elegante para criar elevação */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); 
+        }
+        .radar-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #e9ecef;
+            border-top-color: #0d6efd; /* Azul primário para indicar processamento */
+            border-radius: 50%;
+            animation: spin 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        }
+        .diagnostic-box {
+            background: #f8f9fa;
+            border-left: 4px solid #0d6efd;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            color: #495057;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .blink { animation: blinker 1.5s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0.4; } }
+    </style>
+</head>
+<body>
+
+    <div class="container text-center">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="clean-panel p-5">
+                    
+                    <!-- Indicador Visual de Atividade -->
+                    <div class="d-flex justify-content-center mb-4">
+                        <div class="radar-spinner"></div>
+                    </div>
+
+                    <h2 class="fw-bold text-dark mb-3">SISTEMA EM ATUALIZAÇÃO</h2>
+                    <p class="text-secondary mb-4 fs-5">
+                        Nossa equipe técnica está aplicando uma melhoria no servidor.
+                    </p>
+                    
+                    <!-- Painel de Diagnóstico Claro -->
+                    <div class="diagnostic-box p-3 text-start mb-4">
+                        <strong class="d-block mb-1 text-dark">Lendo Sensores da Plataforma:</strong>
+                        > STATUS: <span class="text-warning fw-bold">OFFLINE (503)</span><br>
+                        > OPERAÇÃO: <span class="text-primary fw-bold">UPGRADE DE ROTINAS</span><br>
+                        > CONEXÃO: <span class="text-primary fw-bold blink">AGUARDANDO REESTABELECIMENTO...</span>
+                    </div>
+
+                    <p class="small text-muted mb-0">
+                        Não é necessário atualizar a página. O sistema recarregará automaticamente assim que a manutenção for concluída.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Circuito de Telemetria (Watchdog de Reconexão) -->
+    <script>
+        function checkServer() {
+            // Ping silencioso no servidor a cada 5 segundos
+            fetch(window.location.href, { method: 'HEAD', cache: 'no-cache' })
+                .then(response => {
+                    // Quando a flag for removida, o servidor volta a enviar 200 OK
+                    if (response.status === 200) {
+                        window.location.reload(); // Recarrega a UI limpando a tela de erro
+                    }
+                })
+                .catch(() => {
+                    // Se o docker ainda estiver em 'down', a conexão será recusada. 
+                    // Ignoramos silenciosamente e tentamos de novo no próximo ciclo.
+                });
+        }
+        setInterval(checkServer, 5000);
+    </script>
+</body>
+</html>

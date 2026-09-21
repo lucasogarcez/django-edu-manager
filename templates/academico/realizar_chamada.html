@@ -1,0 +1,113 @@
+{% extends "index.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Realizar Chamada - {{ turma }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <nav aria-label="breadcrumb" style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);" class="bg-white p-3 rounded-3 shadow-sm border mb-4">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item">
+                <a href="{% url 'home' %}" class="text-decoration-none text-secondary d-flex align-items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house-door-fill" viewBox="0 0 16 16">
+                    <path d="M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5"/>
+                    </svg>
+                    Início
+                </a>
+            </li>
+            
+            {% if user.is_staff %}
+                <li class="breadcrumb-item">
+                    <a href="{% url 'academico:listar_turmas' %}" class="text-decoration-none text-secondary">Turmas</a>
+                </li>
+            {% else %}
+                <li class="breadcrumb-item">
+                    <a href="{% url 'academico:minhas_turmas' %}" class="text-decoration-none text-secondary">Minhas Turmas</a>
+                </li>
+            {% endif %}
+
+            <li class="breadcrumb-item">
+                <a href="{% url 'academico:alunos_por_turma' turma.id %}" class="text-decoration-none text-secondary">
+                    {{ turma.modalidade_id.nome }}
+                </a>
+            </li>
+
+            <li class="breadcrumb-item active fw-bold text-primary" aria-current="page">Realizar Chamada</li>
+        </ol>
+    </nav>
+
+    <h2>Realizar Chamada</h2>
+    <h4>Turma: {{ turma.modalidade_id.nome }} ({{ turma.categoria.nome }})</h4>
+    <h5>Dia: {{ nome_do_dia_hoje }}</h5>
+    <p>Data: {% now "d/m/Y H:i" %}</p>
+
+    <form method="post">
+        {% csrf_token %}
+        
+        {# Renderiza o Management Form (essencial para o FormSet) #}
+        {{ formset.management_form }}
+        
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th scope="col">Aluno</th>
+                        <th scope="col" style="min-width: 250px;">Status da Presença</th>
+                        <th scope="col">Observações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for matricula, form in alunos_e_formularios %}
+                        <tr {% if form.status.field.widget.attrs.disabled %}class="table-warning"{% endif %}>
+                            <td>
+                                <label for="{{ form.status.id_for_label }}">
+                                    {{ matricula.aluno_id.primeiro_nome }} {{ matricula.aluno_id.ultimo_nome }}
+
+                                    {# Adiciona um ícone se tiver atestado #}
+                                    {% if form.status.field.widget.attrs.disabled %}
+                                        <span class="badge bg-info text-dark ms-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-file-earmark-medical" viewBox="0 0 16 16">
+                                                <path d="M7.5 5.5a.5.5 0 0 0-1 0v.634l-.549-.317a.5.5 0 1 0-.5.866L6 7l-.549.317a.5.5 0 1 0 .5.866l.549-.317V8.5a.5.5 0 1 0 1 0v-.634l.549.317a.5.5 0 1 0 .5-.866L8 7l.549-.317a.5.5 0 1 0-.5-.866l-.549.317zm-2 4.5a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 2a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1z"/>
+                                                <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/>
+                                            </svg>
+                                        </span>
+                                    {% endif %}
+                                </label>
+                            </td>
+                            <td>
+                                {# Renderiza os Radio Buttons do form de Presença #}
+                                {{ form.status|as_crispy_field }}
+
+                                {# Verifica se o campo foi desabilitado pela View #}
+                                {% if form.fields.status.widget.attrs.disabled %}
+                                    {# Se estiver desabilitado, cria um input ESCONDIDO com o valor 'ATESTADO' #}
+                                    <input type="hidden" name="{{ form.status.html_name }}" value="ATESTADO">
+                                {% endif %}
+                            </td>
+                            <td>
+                                {# Renderiza o campo de Observações #}
+                                {{ form.observacoes|as_crispy_field }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="d-flex justify-content-end mt-3">
+            <a href="{% url 'academico:alunos_por_turma' turma.id %}" class="btn btn-secondary me-2">Cancelar</a>
+            <button type="submit" class="btn btn-success">Salvar Chamada</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+{# CSS Opcional para alinhar os Radio Buttons horizontalmente #}
+<style>
+    td .mb-3 {
+        margin-bottom: 0 !important;
+    }
+</style>
+{% endblock %}

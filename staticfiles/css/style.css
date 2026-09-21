@@ -1,0 +1,41 @@
+/* style.css - Carregar em TODAS as páginas */
+
+/* Fundo Geral e Tipografia [cite: 20, 85] */
+body { 
+    background-color: #f8f9fa; 
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Títulos [cite: 21] */
+h1, h2, h3, h4, h5, h6 { font-weight: 700; color: #212529; }
+
+/* Padrão de Cards [cite: 28] */
+.card {
+    border: 1px solid rgba(0,0,0,.125);
+    box-shadow: 0 .125rem .25rem rgba(0,0,0,.075); /* shadow-sm */
+    border-radius: var(--bs-border-radius-lg) !important;
+}
+
+/* Ajustes de Tabela */
+.table-scroll-area {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+}
+.table thead th {
+    font-weight: 600;
+    color: #495057;
+    background-color: #f8f9fa; /* Cabeçalho cinza claro */
+}
+
+/* Ícones de KPI (Estilo Dashboard) */
+.kpi-icon-box {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+}
+
+/* Navbar Sticky */
+.navbar { z-index: 1030; }

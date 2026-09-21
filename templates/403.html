@@ -1,0 +1,20 @@
+{% extends "index.html" %}
+{% load static %}
+
+{% block title %}Página de Erro 403{% endblock %}
+
+{% block content %}
+<div class="container text-center mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 d-flex flex-column align-items-center">
+            <!-- Imagem responsiva e centralizada -->
+            <img src="{% static 'images/403.png' %}" class="img-fluid d-block mx-auto mb-4" alt="Erro 403" style="max-width: 300px;"> {# Ajuste o max-width conforme necessário #}
+            
+            <h3>Você não tem permissão para acessar o recurso solicitado.</h3>
+            <p class="mt-3">
+                <a href="{% url 'home' %}" class="btn btn-primary">Voltar para a página principal</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

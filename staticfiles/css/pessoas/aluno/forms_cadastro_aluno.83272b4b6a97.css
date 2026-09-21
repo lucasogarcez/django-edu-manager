@@ -1,0 +1,12 @@
+#div_id_objetivos > fieldset > div,
+#div_id_doencas > fieldset > div {
+    column-count: 3;
+    column-gap: 2rem;
+}
+
+#div_id_objetivos > fieldset > div > .form-check,
+#div_id_doencas > fieldset > div > .form-check {
+    -webkit-column-break-inside: avoid;
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
