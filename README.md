@@ -26,7 +26,7 @@ Plataforma de gestão acadêmica projetada para otimizar fluxos administrativos 
 
 O sistema está hospedado na nuvem com um banco de dados populado para demonstração imediata.
 
-🔗 **Acesse a plataforma aqui:** [django-edu-manager.onrender.com](django-edu-manager.onrender.com)
+🔗 **Acesse a plataforma aqui:** [https://django-edu-manager.onrender.com](https://django-edu-manager.onrender.com)
 
 Para auditar as barreiras de segurança, painéis customizados e fluxos de cada nível hierárquico, utilize as credenciais de calibração abaixo. 
 
