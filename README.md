@@ -95,7 +95,8 @@ DB_PORT=5432
 python manage.py makemigrations
 python manage.py migrate
 
-# Popular o banco com dados falsos realistas e criar o superusuário de testes
+# Popular o banco com dados falsos realistas, grupos e criar o superusuário de testes
+python manage.py setup_grupos
 python manage.py seed_portfolio
 ```
 
