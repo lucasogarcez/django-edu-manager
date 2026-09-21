@@ -26,11 +26,21 @@ Plataforma de gestão acadêmica projetada para otimizar fluxos administrativos 
 
 O sistema está hospedado na nuvem com um banco de dados populado para demonstração imediata.
 
-🔗 **Acesse a plataforma aqui:** `[Link do Render/Railway aqui]`
+🔗 **Acesse a plataforma aqui:** [django-edu-manager.onrender.com](django-edu-manager.onrender.com)
 
-Para testar os painéis de gestão e validações com privilégios administrativos, utilize as credenciais de acesso universal:
-*   **E-mail:** `admin@portfolio.com`
-*   **Senha:** `admin123`
+Para auditar as barreiras de segurança, painéis customizados e fluxos de cada nível hierárquico, utilize as credenciais de calibração abaixo. 
+
+🔑 **Senha universal para todas as contas:** `senha123`
+
+| Perfil de Acesso | E-mail de Login (Usuário) | Nível de Permissão na Planta |
+| :--- | :--- | :--- |
+| **⚙️ Admin (Mestre)** | `admin@portfolio.com` | **Acesso Irrestrito:** Visão global e absoluta de todas as tabelas. Único nível hierárquico com chave de acesso para **responder e fechar** tickets de suporte. |
+| **🛡️ Diretoria** | `diretor@portfolio.com` | **Acesso Global:** Gestão total de polos, matrizes curriculares, usuários e auditoria do sistema. |
+| **📂 Secretaria** | `secretaria@portfolio.com` | **Operacional:** Gerenciamento de alunos, matrículas, alocação de turmas e emissão de tickets de suporte. |
+| **👨‍🏫 Professor** | `professor@portfolio.com` | **Restrito (Multitenancy):** Visualização blindada. Acessa apenas as turmas nas quais está fisicamente alocado (relação N:N). |
+| **🧑‍💻 Estagiário** | `estagiario@portfolio.com` | **Super Restrito:** Perfil de leitura/auxílio com bloqueios severos de endpoints para demonstrar validação de backend. |
+
+> **💡 Dica de Teste (Auditoria de Intertravamento de Privilégios):** Qualquer usuário do sistema pode acionar a equipe técnica. Faça login como **Professor** ou **Secretaria** e abra um Ticket de Suporte. Em seguida, note que a interface bloqueia a sua capacidade de interagir com a resolução. Acesse a conta **Admin (Mestre)** para visualizar todos os chamados abertos e emitir a resposta, validando a proteção contra escalonamento de privilégios.
 
 ---
 
@@ -52,7 +62,7 @@ Certifique-se de ter o [Python](https://www.python.org/) (3.10+) e o [PostgreSQL
 
 ### 1. Clonando o Repositório
 ```bash
-git clone [https://github.com/lucasogarcez/django-edu-manager.git](https://github.com/lucasogarcez/django-edu-manager.git)
+git clone https://github.com/lucasogarcez/django-edu-manager.git
 cd django-edu-manager
 ```
 
@@ -86,7 +96,7 @@ python manage.py makemigrations
 python manage.py migrate
 
 # Popular o banco com dados falsos realistas e criar o superusuário de testes
-python manage.py seed_portifolio
+python manage.py seed_portfolio
 ```
 
 ### 5. Iniciando o Servidor

@@ -18,21 +18,23 @@ class Command(BaseCommand):
             'Professores': [
                 # Leituras de Sensores (Apenas Visualização)
                 'view_aluno', 'view_turma', 'view_turmadias', 'view_modalidade', 
-                'view_polo', 'view_atestado',
+                'view_polo', 'view_atestado', 'view_matricula',
                 'view_questionariosaude', 'view_doenca', 'view_objetivo',
                 
                 # Atuadores (Inserção e Edição do fluxo de aula diário)
                 'add_chamada', 'change_chamada', 'view_chamada',
                 'add_presenca', 'change_presenca', 'view_presenca',
                 'add_registroatendimento', 'change_registroatendimento', 'view_registroatendimento',
+                'change_matricula',
             ],
             'Estagiarios': [
                 'view_aluno', 'view_turma', 'view_turmadias', 'view_modalidade', 
-                'view_polo', 'view_atestado', 
+                'view_polo', 'view_atestado', 'view_matricula',
                 'view_questionariosaude', 'view_doenca', 'view_objetivo',
                 'add_chamada', 'change_chamada', 'view_chamada',
                 'add_presenca', 'change_presenca', 'view_presenca',
                 'add_registroatendimento', 'change_registroatendimento', 'view_registroatendimento',
+                'change_matricula',
             ],
             'Secretaria': [
                 # A Secretaria faz todo o trabalho braçal de inserção (add), edição (change) e leitura (view).
@@ -84,7 +86,7 @@ class Command(BaseCommand):
                 'add_group', 'change_group', 'delete_group', 'view_group',
                 
                 # FAQ
-                'add_CategoriadeAjuda', 'change_CategoriadeAjuda', 'delete_CategoriadeAjuda', 'view_CategoriadeAjuda',
+                'add_categoriafaq', 'change_categoriafaq', 'delete_categoriafaq', 'view_categoriafaq',
             ]
         }
 
